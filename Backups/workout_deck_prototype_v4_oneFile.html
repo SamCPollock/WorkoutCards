@@ -1,0 +1,2541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Workout Deck</title>
+<style>
+:root{
+  --desk:#0b5f43;
+  --window:#c8c2b3;
+  --window-dark:#b2ab9c;
+  --panel:#ddd6c7;
+  --paper:#f3eedf;
+  --ink:#1d1e22;
+  --muted:#4f4a43;
+  --line:#736d63;
+  --shadow:#2f2b26;
+  --felt:#167446;
+  --felt-dark:#0f5935;
+  --push:#d97f68;
+  --legs:#ceb247;
+  --core:#7e9bd6;
+  --mobility:#8bbf82;
+  --posture:#b597cb;
+  --cardio:#db955e;
+  --balance:#79bbb9;
+  --good:#aac79d;
+  --warn:#d8c95c;
+  --danger:#c99e92;
+  --soft:#d4c8b2;
+  --tile:#c3bcad;
+  --display:"Impact","Haettenschweiler","Arial Narrow Bold","Arial Black",sans-serif;
+  --body:"Tahoma","MS Sans Serif","Geneva","Verdana",sans-serif;
+  --mono:"Courier New","Lucida Console","Monaco",monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  color:var(--ink);
+  font-family:var(--body);
+  background-color:var(--desk);
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.app{padding:10px;min-height:100%}
+.window{
+  min-height:calc(100vh - 20px);
+  background:var(--window);
+  border:2px solid;
+  border-color:#f1ece0 #6c665d #6c665d #f1ece0;
+  box-shadow:8px 8px 0 rgba(0,0,0,.2), inset 0 0 0 1px #a09889;
+  display:flex;flex-direction:column;
+}
+.titlebar{
+  min-height:52px;
+  background:#0e4f8d;
+  color:#f5f2ea;
+  border-bottom:2px solid #272c35;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:8px 12px;
+}
+.title-left,.title-right{display:flex;align-items:center;gap:12px;min-width:0}
+.titlebar h1{
+  margin:0;
+  font-family:var(--display);
+  font-size:clamp(1.9rem,3vw,2.45rem);
+  letter-spacing:.01em;
+  line-height:.92;
+  text-transform:uppercase;
+  text-shadow:1px 1px 0 rgba(0,0,0,.35);
+}
+.title-note{
+  font-family:var(--mono);
+  color:#d7e7fb;
+  font-size:.84rem;
+  letter-spacing:.08em;
+  white-space:nowrap;
+  text-transform:uppercase;
+}
+.home-btn{
+  min-height:34px;
+  padding:6px 12px;
+  background:#ddd5c3;
+  border:2px solid;
+  border-color:#fbf8f1 #5d574f #5d574f #fbf8f1;
+  box-shadow:2px 2px 0 rgba(0,0,0,.22);
+  font-family:var(--mono);
+  text-transform:uppercase;
+  font-size:.8rem;
+  font-weight:700;
+  border-radius:0;
+}
+.home-btn:hover{transform:translate(-1px,-1px)}
+.window-body{
+  flex:1;
+  overflow:auto;
+  overflow-x:hidden;
+  padding:12px;
+  background:var(--window);
+}
+.screen{display:none}
+.screen.active{display:block}
+.panel{
+  background:var(--panel);
+  border:2px solid;
+  border-color:#f2eee6 #817a70 #817a70 #f2eee6;
+  box-shadow:2px 2px 0 rgba(0,0,0,.14), inset 0 0 0 1px #cbc3b3;
+}
+.pad{padding:12px}
+.stack{display:grid;gap:12px}
+.section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.header-cluster{display:flex;gap:12px;align-items:flex-start}
+.icon-tile{
+  width:48px;height:48px;flex:0 0 48px;background:var(--tile);
+  border:2px solid;border-color:#f4f0ea #6a645b #6a645b #f4f0ea;
+  box-shadow:2px 2px 0 rgba(0,0,0,.14);display:grid;place-items:center
+}
+.icon-tile svg{width:30px;height:30px;shape-rendering:crispEdges}
+.section-title{
+  margin:0;
+  font-family:var(--display);
+  font-size:clamp(2rem,3.2vw,3rem);
+  letter-spacing:.01em;
+  line-height:.92;
+  text-transform:uppercase;
+}
+.copy{color:var(--muted);line-height:1.35}
+.mono{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:.86rem;color:#4d4941}
+.status-row{display:flex;gap:8px;flex-wrap:wrap}
+.status-chip{
+  background:#eee7d9;
+  border:2px solid #7f786d;
+  padding:4px 9px;
+  font-family:var(--mono);
+  font-size:.8rem;
+  text-transform:uppercase
+}
+.deck-top-layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:12px;align-items:start;margin-top:10px}
+.deck-stage{
+  background:var(--felt);
+  border:2px solid #0e663c;
+  min-height:304px;
+  padding:10px 10px 56px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.14);
+}
+.deck-surface{position:relative;min-height:234px;height:234px}
+.hand-count-bubble{
+  position:absolute;
+  top:10px;
+  right:12px;
+  z-index:18;
+  min-width:58px;
+  min-height:58px;
+  padding:8px 10px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:
+    radial-gradient(circle at center, #d95a2a 0 68%, transparent 69%),
+    conic-gradient(#ffe38d calc(var(--fill, 0) * 1turn), rgba(101,25,21,.36) 0);
+  box-shadow:3px 3px 0 rgba(0,0,0,.24), inset 0 0 0 2px rgba(255,239,191,.28);
+  color:#fff4d5;
+  text-align:center;
+  transform:rotate(5deg);
+}
+.hand-count-num{
+  display:block;
+  font-family:var(--display);
+  font-size:1.7rem;
+  line-height:.9;
+  font-weight:900;
+  text-shadow:1px 1px 0 rgba(88,21,7,.45);
+}
+.hand-count-label{
+  display:block;
+  margin-top:2px;
+  font-family:var(--mono);
+  font-size:.58rem;
+  line-height:1.05;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.deck-clear-btn{
+  position:absolute;
+  left:10px;
+  bottom:10px;
+  z-index:20;
+  min-height:28px;
+  padding:5px 8px;
+  font-size:.74rem;
+}
+.deck-empty{
+  position:absolute;inset:0;display:grid;place-items:center;text-align:center;
+  color:#eef6ef;background:rgba(255,255,255,.05);border:2px dashed rgba(255,255,255,.25)
+}
+.deck-empty-copy{
+  margin-top:56px;
+  padding:10px 14px;
+  font-family:var(--mono);
+  font-size:.84rem;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#fff1c5;
+  background:rgba(72,31,15,.22);
+  border:2px solid rgba(255,207,107,.34);
+  box-shadow:inset 0 0 0 1px rgba(255,244,205,.08);
+}
+.deck-side{
+  display:grid;
+  gap:10px;
+  align-content:start;
+  min-height:220px;
+  grid-template-rows:auto auto auto 1fr auto;
+}
+.mini-panel{
+  background:#e8e1d3;
+  border:2px solid;
+  border-color:#f2efe8 #8b857b #8b857b #f2efe8;
+  padding:10px;
+  display:grid;
+  gap:8px
+}
+.control-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.input-number,.search-input{
+  min-height:42px;
+  background:#f1ece0;
+  border:2px solid #91897b;
+  box-shadow:inset 1px 1px 0 rgba(255,255,255,.9);
+  padding:9px 12px;
+  border-radius:0;
+}
+.input-number{width:82px;text-align:center;font-size:1.5rem;font-weight:900}
+.search-input{width:100%}
+.classic-btn{
+  min-height:42px;
+  padding:10px 14px;
+  background:#ece6d9;
+  border:2px solid;
+  border-color:#f4f0ea #5c574f #5c574f #f4f0ea;
+  border-radius:0;
+  box-shadow:2px 2px 0 rgba(0,0,0,.18);
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.02em;
+}
+.classic-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(0,0,0,.2)}
+.classic-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,.14)}
+.classic-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:2px 2px 0 rgba(0,0,0,.12)}
+.btn-random{background:var(--warn)}
+.btn-clear{background:var(--danger)}
+.btn-start{background:var(--good)}
+.btn-alt{background:#efe8d8}
+.btn-small{min-height:36px;padding:8px 11px;font-size:.92rem}
+.btn-primary-cta{
+  background:#c8da84;
+  box-shadow:4px 4px 0 rgba(0,0,0,.24);
+  font-size:1.08rem;
+  min-height:62px;
+  padding:14px 16px;
+}
+.btn-primary-cta:hover{box-shadow:5px 5px 0 rgba(0,0,0,.26)}
+.btn-muted{
+  background:#ddd6c7;
+  color:#4f4a43;
+  box-shadow:1px 1px 0 rgba(0,0,0,.12);
+  min-height:34px;
+  padding:7px 10px;
+  font-size:.82rem;
+  justify-self:start;
+}
+.btn-muted:hover{box-shadow:2px 2px 0 rgba(0,0,0,.16)}
+.btn-feature{
+  background:#d8c95c;
+  box-shadow:3px 3px 0 rgba(0,0,0,.2);
+  font-size:.98rem;
+  padding:9px 14px;
+}
+.btn-feature:hover{box-shadow:4px 4px 0 rgba(0,0,0,.22)}
+.micro-note{padding:10px;background:#efe8da;border:2px dashed #8a8478;line-height:1.4;font-size:.92rem}
+.balance-panel{gap:10px}
+.balance-title-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:8px;
+}
+.balance-mini-list{display:grid;gap:8px}
+.balance-mini-row{display:grid;gap:3px}
+.balance-mini-head{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  font-size:.82rem;
+  font-weight:800;
+  line-height:1.15;
+}
+.balance-mini-row.balance-active .balance-mini-head{color:#1f4e8c}
+.balance-mini-row.balance-active .balance-mini-track{
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35), 0 0 0 2px rgba(122,164,219,.35);
+}
+.balance-mini-btn{
+  all:unset;
+  display:block;
+  cursor:pointer;
+}
+.balance-mini-btn:focus-visible{
+  outline:2px dashed #222;
+  outline-offset:3px;
+}
+.balance-mini-head .mono{font-size:.74rem}
+.balance-mini-track{
+  height:14px;
+  background:#efe8db;
+  border:2px solid #757067;
+  overflow:hidden;
+}
+.balance-mini-fill{
+  height:100%;
+  background:#7aa4db;
+  border-right:2px solid rgba(0,0,0,.2);
+}
+.balance-empty{
+  background:#efe8da;
+  border:2px dashed #8d877d;
+  padding:10px;
+  line-height:1.35;
+  font-size:.88rem;
+}
+.library-top{display:grid;gap:10px}
+.library-controls{display:grid;grid-template-columns:minmax(240px,1fr) auto auto;gap:10px;align-items:center}
+.filter-strip{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  padding:4px;
+  background:#d6cfbf;
+  border:2px solid;
+  border-color:#f2eee6 #817a70 #817a70 #f2eee6;
+}
+.filter-chip{
+  min-height:34px;
+  border:1px solid #6d675e;
+  border-bottom-width:3px;
+  background:#c9c1b0;
+  padding:6px 12px 5px;
+  border-radius:0;
+  font-weight:800;
+  font-family:var(--mono);
+  font-size:.8rem;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  box-shadow:none;
+}
+.filter-chip:hover{
+  background:#d6cebd;
+  transform:translateY(-1px);
+}
+.filter-chip.active{
+  background:#f0e26a;
+  border-color:#5c564d;
+  border-bottom-color:#2d2a25;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);
+}
+.library-grid{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;justify-items:center;align-items:start}
+.card-button{all:unset;display:block;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
+.card-button:focus-visible,.deck-card:focus-visible{outline:3px dashed #222;outline-offset:3px}
+.card-wrap{position:relative;width:150px;min-width:150px}
+.card{
+  width:150px;
+  height:212px;
+  border:3px solid #302419;
+  border-radius:10px;
+  background:#f6ecd4;
+  background-image:
+    linear-gradient(to bottom, rgba(255,255,255,.3), rgba(255,255,255,0) 28px),
+    repeating-linear-gradient(0deg, rgba(120,82,36,.035), rgba(120,82,36,.035) 1px, transparent 1px, transparent 4px);
+  overflow:visible;
+  box-shadow:4px 4px 0 rgba(0,0,0,.24), inset 0 0 0 2px #fff6df, inset 0 -10px 0 rgba(145,109,52,.05);
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  pointer-events:none;
+}
+.card.large{width:188px;height:272px}
+.deck-card .card-remove-toggle,
+.deck-card .card-info-toggle,
+.card-button .card-info-toggle,
+.card-button .card-add-toggle{
+  opacity:0;
+  visibility:hidden;
+  transition:opacity .12s ease;
+}
+.deck-card.is-focused .card-remove-toggle,
+.deck-card.is-focused .card-info-toggle,
+.card-button.is-focused .card-info-toggle,
+.card-button.is-focused .card-add-toggle{
+  opacity:1;
+  visibility:visible;
+}
+.card-button.is-focused .card{
+  box-shadow:0 0 0 3px rgba(240,226,106,.7), 6px 6px 0 rgba(0,0,0,.26), inset 0 0 0 2px #f8f3e8;
+}
+.card-remove-toggle{
+  position:absolute;
+  top:6px;
+  left:6px;
+  width:22px;
+  height:22px;
+  border:2px solid #6c2317;
+  background:#d86539;
+  box-shadow:2px 2px 0 rgba(0,0,0,.2);
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:700;
+  line-height:1;
+  display:grid;
+  place-items:center;
+  z-index:4;
+  pointer-events:auto;
+  cursor:pointer;
+}
+.card.large .card-remove-toggle{
+  width:26px;
+  height:26px;
+  font-size:14px;
+}
+.card-remove-toggle:hover{background:#e17345}
+.card-info-toggle{
+  position:absolute;
+  top:6px;
+  right:6px;
+  width:22px;
+  height:22px;
+  border:2px solid #78510f;
+  background:#e4b94d;
+  box-shadow:2px 2px 0 rgba(0,0,0,.2);
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:700;
+  line-height:1;
+  display:grid;
+  place-items:center;
+  z-index:4;
+  pointer-events:auto;
+  cursor:help;
+}
+.card.large .card-info-toggle{
+  width:26px;
+  height:26px;
+  font-size:14px;
+}
+.card-info-toggle:hover{background:#efc863}
+.card-add-toggle{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:60px;
+  height:60px;
+  border:3px solid #6c2317;
+  background:#d65424;
+  color:#fff1d4;
+  box-shadow:4px 4px 0 rgba(0,0,0,.24);
+  transform:translate(-50%,-50%);
+  font-family:var(--display);
+  font-size:34px;
+  font-weight:900;
+  line-height:1;
+  display:grid;
+  place-items:center;
+  z-index:4;
+  pointer-events:auto;
+  cursor:pointer;
+}
+.card-add-toggle:hover{background:#e2612d}
+.card.large .card-add-toggle{
+  width:72px;
+  height:72px;
+  font-size:40px;
+}
+.card-info-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+.card-info-title{
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.card.large .card-info-title{font-size:12px}
+.card-info-hide{
+  min-height:24px;
+  padding:4px 7px;
+  font-size:.74rem;
+}
+.info-popup{
+  position:fixed;
+  width:min(320px, calc(100vw - 24px));
+  max-height:min(420px, calc(100vh - 24px));
+  background:#f2ecde;
+  border:2px solid #5f584e;
+  box-shadow:5px 5px 0 rgba(0,0,0,.26);
+  padding:12px;
+  z-index:80;
+  display:grid;
+  gap:8px;
+  overflow:auto;
+}
+.info-popup.hidden{display:none}
+.card-info-section{display:grid;gap:2px}
+.card-info-label{
+  font-family:var(--mono);
+  font-size:10px;
+  text-transform:uppercase;
+  color:#5a544b;
+}
+.card-info-copy{
+  font-size:11px;
+  line-height:1.3;
+  color:#2d2a25;
+}
+.card.large .card-info-copy{font-size:12px}
+.card-info-couplet{
+  margin-top:auto;
+  padding-top:4px;
+  border-top:2px dotted #8a8175;
+  font-size:11px;
+  line-height:1.3;
+  font-style:italic;
+}
+.card.large .card-info-couplet{font-size:12px}
+.card .topband{
+  height:30px;
+  padding:0 34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--accent);
+  border-bottom:3px solid rgba(65,40,14,.34);
+  box-shadow:inset 0 1px 0 rgba(255,245,212,.45);
+}
+.card.large .topband{height:34px;padding-right:42px;padding-left:42px}
+.card .topband-label{
+  display:block;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:11px;
+  text-transform:uppercase;
+  font-weight:700;
+  letter-spacing:.08em;
+  line-height:1;
+  color:#362717;
+  text-shadow:1px 1px 0 rgba(255,242,205,.3);
+}
+.card.large .topband-label{
+  font-size:13px;
+  letter-spacing:.09em;
+}
+.card .body{
+  flex:1;
+  padding:9px 10px 10px;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.card .name{
+  font-family:var(--display);
+  font-weight:900;
+  letter-spacing:-.02em;
+  line-height:.9;
+  font-size:17px;
+  min-height:62px;
+  color:#2f2822;
+  text-transform:uppercase
+}
+.card.large .name{font-size:1.92rem;min-height:102px}
+.card .muscle-groups{
+  display:grid;
+  gap:5px;
+  padding-top:4px;
+  border-top:2px dotted rgba(110,88,63,.45);
+}
+.card .primary-muscles{
+  font-size:12px;
+  font-weight:900;
+  line-height:1.12;
+  color:#2e2318;
+  text-transform:uppercase;
+}
+.card .secondary-muscles{
+  font-size:10px;
+  font-weight:700;
+  line-height:1.22;
+  color:#6b5a45;
+}
+.card.large .muscle-groups{gap:8px}
+.card.large .primary-muscles{font-size:15px}
+.card.large .secondary-muscles{font-size:12px}
+.card .footer-note{
+  margin-top:auto;
+  display:flex;
+  justify-content:flex-end;
+  align-items:flex-end;
+  gap:8px;
+  padding-top:4px;
+  border-top:2px solid rgba(120,91,49,.16);
+}
+.card .footer-note .tiny{
+  font-family:var(--mono);
+  font-size:10px;
+  color:#7a6448;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.card-button:hover .card{transform:translate(-1px,-1px)}
+.card-button.in-deck .card{box-shadow:0 0 0 3px rgba(240,226,106,.55),4px 4px 0 rgba(0,0,0,.24)}
+.card-button.dragging{opacity:.55}
+[data-category="push"]{--accent:var(--push)}
+[data-category="legs"]{--accent:var(--legs)}
+[data-category="core"]{--accent:var(--core)}
+[data-category="mobility"]{--accent:var(--mobility)}
+[data-category="posture"]{--accent:var(--posture)}
+[data-category="cardio"]{--accent:var(--cardio)}
+[data-category="balance"]{--accent:var(--balance)}
+.deck-card{all:unset;position:absolute;top:8px;cursor:grab;display:block;transform-origin:top left;touch-action:none;user-select:none;-webkit-user-select:none}
+.deck-card.is-focused .card{
+  box-shadow:0 0 0 3px rgba(240,226,106,.7), 6px 6px 0 rgba(0,0,0,.26), inset 0 0 0 2px #f8f3e8;
+}
+.deck-card.balance-hit .card{
+  box-shadow:0 0 0 3px rgba(122,164,219,.82), 5px 5px 0 rgba(0,0,0,.24), inset 0 0 0 2px #f8f3e8;
+}
+.deck-card.balance-hit .primary-muscles{
+  color:#153f73;
+}
+.deck-card.balance-hit .secondary-muscles{
+  color:#305f97;
+}
+.deck-card.drag-over .card{box-shadow:0 0 0 3px rgba(255,255,255,.75),4px 4px 0 rgba(0,0,0,.24)}
+.deck-stage.drag-over{box-shadow:inset 0 0 0 2px rgba(0,0,0,.14), 0 0 0 3px rgba(240,226,106,.45)}
+.card-button.dragging,.deck-card.dragging{opacity:.45}
+.drag-ghost{
+  position:fixed !important;
+  margin:0 !important;
+  z-index:200;
+  pointer-events:none !important;
+  opacity:.92;
+}
+.workout-grid{display:grid;gap:12px}
+.workout-top{display:grid;grid-template-columns:250px minmax(0,1fr) 132px;gap:12px;align-items:stretch}
+.timer-panel{display:grid;gap:6px}
+.big-timer{font-family:var(--display);font-size:clamp(3.8rem,8vw,5.9rem);line-height:.82;font-weight:900;letter-spacing:-.08em}
+.small-timer{font-family:var(--mono);font-size:.98rem}
+.state-panel{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;align-items:center}
+.state-title{font-family:var(--display);font-size:clamp(1.6rem,3vw,2.3rem);line-height:.95;letter-spacing:-.06em;font-weight:900;margin:0}
+.pause-panel{display:grid}
+.pause-btn{width:100%;min-height:100%;background:#e4df71;border-radius:0;font-size:1.02rem}
+.workout-main{display:grid;grid-template-columns:170px minmax(0,1fr) 170px;gap:12px;align-items:stretch}
+.pile-box{padding:10px;min-height:440px;display:grid;align-content:start;gap:10px}
+.pile-title{font-family:var(--mono);text-transform:uppercase;font-size:.86rem;letter-spacing:.06em}
+.pile-sub{font-size:.95rem;color:#4f4b44}
+.mini-pile{position:relative;height:220px}
+.mini-card{position:absolute}
+.mini-card .card{transform:scale(.72);transform-origin:top left}
+.list-note{margin-top:auto;font-size:.9rem;line-height:1.45;color:#4e4a44}
+.active-shell{
+  background:var(--felt);
+  border:2px solid #0e663c;
+  min-height:440px;
+  padding:14px;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  gap:10px;
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.14);
+}
+.active-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.active-top h2{margin:0;color:#eef5ef;font-family:var(--display);font-weight:900;font-size:clamp(1.9rem,3vw,2.8rem);letter-spacing:.01em;line-height:.9;text-transform:uppercase}
+.active-top .copy{color:#e2efe4}
+.active-center{display:grid;place-items:center;min-height:228px}
+.active-bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.active-footnote{color:#eef5ef;max-width:26rem;line-height:1.35}
+.card-counter{background:#efe8da;border:2px solid #8d877d;padding:5px 10px;font-family:var(--mono);text-transform:uppercase;font-size:.84rem}
+.done-btn{background:#f0e15d;min-width:232px;min-height:60px;font-size:1.1rem}
+.workout-bottom{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.utility-actions,.finish-actions{display:flex;gap:8px;flex-wrap:wrap}
+.utility-actions .classic-btn,.finish-actions .classic-btn{min-height:38px;padding:8px 12px;font-size:.94rem;box-shadow:2px 2px 0 rgba(0,0,0,.18)}
+#builderScreen .panel{
+  background:#d8c8aa;
+  border-width:3px;
+  border-color:#f5ead6 #665947 #665947 #f5ead6;
+  box-shadow:3px 3px 0 rgba(0,0,0,.22), inset 0 0 0 1px #b89e72;
+}
+#builderScreen .icon-tile{
+  background:#e2c98e;
+  border-width:3px;
+  border-color:#f7e9bc #77592c #77592c #f7e9bc;
+  box-shadow:3px 3px 0 rgba(0,0,0,.2);
+}
+#builderScreen .section-title{
+  color:#3d1a0d;
+  text-shadow:1px 1px 0 rgba(255,240,197,.45);
+}
+#builderScreen .mono{
+  color:#6f2f12;
+}
+#builderScreen .status-chip{
+  background:#4b120f;
+  color:#ffd579;
+  border:3px solid;
+  border-color:#d4944f #1f0604 #1f0604 #f2bc70;
+  box-shadow:2px 2px 0 rgba(0,0,0,.2);
+}
+#builderScreen .deck-stage{
+  background:#156441;
+  border:4px solid;
+  border-color:#43aa78 #073620 #073620 #66c695;
+  box-shadow:4px 4px 0 rgba(0,0,0,.28), inset 0 0 0 2px rgba(241,226,162,.18);
+}
+#builderScreen .deck-empty{
+  color:#fff1c5;
+  background:rgba(72,31,15,.18);
+  border:2px dashed rgba(255,223,136,.45);
+}
+#builderScreen .deck-side .mini-panel,
+#builderScreen .balance-panel{
+  background:#dbc79f;
+  border-width:3px;
+  border-color:#f3e0b9 #6d5129 #6d5129 #f3e0b9;
+  box-shadow:3px 3px 0 rgba(0,0,0,.22), inset 0 0 0 1px #c49c4d;
+}
+#builderScreen .search-input{
+  background:#efe1be;
+  border:3px solid;
+  border-color:#fff0d2 #876642 #876642 #fff0d2;
+  box-shadow:inset 0 0 0 1px #f8efdd;
+  color:#3d2718;
+}
+#builderScreen .search-input::placeholder{
+  color:#846951;
+}
+#builderScreen .classic-btn{
+  border-width:3px;
+  box-shadow:3px 3px 0 rgba(0,0,0,.22);
+}
+#builderScreen .btn-random{
+  background:#d66d2b;
+  color:#fff0d1;
+  border-color:#ffb36b #6a240d #6a240d #ffd8a2;
+}
+#builderScreen .btn-alt{
+  background:#d8b56d;
+  color:#4d2a11;
+  border-color:#f4deab #73552a #73552a #f4deab;
+}
+#builderScreen .btn-primary-cta{
+  background:#e0b12f;
+  color:#34180b;
+  border-color:#ffe28a #76500f #76500f #fff0ae;
+  box-shadow:4px 4px 0 rgba(0,0,0,.24);
+  text-shadow:1px 1px 0 rgba(255,242,187,.3);
+}
+#builderScreen .btn-muted{
+  background:#8d2117;
+  color:#ffe8c0;
+  border-color:#db7b61 #3f0b06 #3f0b06 #f2a28c;
+  box-shadow:2px 2px 0 rgba(0,0,0,.2);
+}
+#builderScreen .btn-feature{
+  background:#d65424;
+  color:#fff2d0;
+  border-color:#ffbc74 #6b180d #6b180d #ffd68f;
+}
+#builderScreen .filter-strip{
+  background:#c49652;
+  border-width:3px;
+  border-color:#f3ddb0 #6b491f #6b491f #f3ddb0;
+  box-shadow:inset 0 0 0 1px rgba(255,241,207,.26);
+}
+#builderScreen .filter-chip{
+  min-height:36px;
+  background:#6f2318;
+  color:#ffdca4;
+  border:2px solid #3c0e0a;
+  border-bottom-width:4px;
+}
+#builderScreen .filter-chip:hover{
+  background:#822a1d;
+}
+#builderScreen .filter-chip.active{
+  background:#e0b12f;
+  color:#35180b;
+  border-color:#7a5410;
+  border-bottom-color:#4f3204;
+  box-shadow:inset 0 0 0 1px rgba(255,241,201,.35);
+}
+#builderScreen .balance-mini-track{
+  background:#efe1be;
+  border:2px solid #856743;
+}
+#builderScreen .balance-mini-fill{
+  background:#d66d2b;
+  border-right:2px solid rgba(93,33,15,.32);
+}
+#builderScreen .balance-mini-row.balance-active .balance-mini-head{
+  color:#7c240f;
+}
+#builderScreen .balance-mini-row.balance-active .balance-mini-track{
+  box-shadow:inset 0 0 0 1px rgba(255,241,201,.34), 0 0 0 2px rgba(224,177,47,.36);
+}
+#builderScreen .card{
+  border-radius:10px;
+  box-shadow:3px 3px 0 rgba(0,0,0,.24), inset 0 0 0 2px #fff5d8;
+}
+#builderScreen .card .topband{
+  border-bottom-width:3px;
+}
+#builderScreen .card-button.is-focused .card,
+#builderScreen .deck-card.is-focused .card{
+  box-shadow:0 0 0 3px rgba(255,214,111,.75), 5px 5px 0 rgba(0,0,0,.26), inset 0 0 0 2px #fff5d8;
+}
+#builderScreen .deck-card.is-focused{
+  margin-top:-8px;
+}
+#builderScreen .deck-card.balance-hit .card{
+  box-shadow:0 0 0 3px rgba(214,109,43,.78), 5px 5px 0 rgba(0,0,0,.24), inset 0 0 0 2px #fff5d8;
+}
+#builderScreen .note-box,
+#builderScreen .balance-empty{
+  background:#efe1be;
+  border:2px solid #856743;
+  box-shadow:inset 0 0 0 1px #f8efdd;
+  color:#523a27;
+}
+#workoutScreen .panel{
+  background:#d8c8aa;
+  border-width:3px;
+  border-color:#f5ead6 #665947 #665947 #f5ead6;
+  box-shadow:3px 3px 0 rgba(0,0,0,.22), inset 0 0 0 1px #b89e72;
+}
+#workoutScreen .timer-panel,
+#workoutScreen .state-panel,
+#workoutScreen .pile-box{
+  background:#dbc79f;
+}
+#workoutScreen .timer-panel{
+  background:#3a1612;
+  border-color:#8d6243 #120705 #120705 #d39a55;
+  box-shadow:3px 3px 0 rgba(0,0,0,.3), inset 0 0 0 1px #7d4424;
+}
+#workoutScreen .timer-panel .mono,
+#workoutScreen .timer-panel .small-timer{
+  color:#ffd06b;
+}
+#workoutScreen .big-timer{
+  color:#ffe08b;
+  text-shadow:2px 2px 0 #8f3f19;
+  letter-spacing:-.05em;
+}
+#workoutScreen .state-panel{
+  background:#d8b56d;
+  border-color:#f4deab #73552a #73552a #f4deab;
+  box-shadow:3px 3px 0 rgba(0,0,0,.24), inset 0 0 0 1px #b97f28;
+}
+#workoutScreen .state-panel .mono{
+  color:#6f2f12;
+}
+#workoutScreen .state-title{
+  color:#34170d;
+  text-shadow:1px 1px 0 rgba(255,238,197,.45);
+}
+#workoutScreen .state-panel .copy{
+  color:#4f3422;
+}
+#workoutScreen .pause-panel{
+  background:#651915;
+  border:3px solid;
+  border-color:#d48f57 #220805 #220805 #f0b972;
+  box-shadow:3px 3px 0 rgba(0,0,0,.28), inset 0 0 0 1px #8c2d24;
+}
+#workoutScreen .pause-btn{
+  background:#d65424;
+  color:#fff2d0;
+  border-width:3px;
+  border-color:#ffbc74 #6b180d #6b180d #ffd68f;
+  box-shadow:3px 3px 0 rgba(0,0,0,.24);
+  text-shadow:1px 1px 0 rgba(73,12,4,.5);
+}
+#workoutScreen .pause-btn:hover{background:#e25f29}
+#workoutScreen .pile-box{
+  background:#c9aa72;
+  border-color:#f3e0b9 #6d5129 #6d5129 #f3e0b9;
+}
+#workoutScreen .pile-title{
+  color:#5d210f;
+  letter-spacing:.09em;
+}
+#workoutScreen .pile-sub{
+  color:#4f3422;
+  font-family:var(--mono);
+  font-size:.86rem;
+  text-transform:uppercase;
+}
+#workoutScreen .mini-pile{
+  background:#16613f;
+  border:3px solid;
+  border-color:#3b9b6f #083a22 #083a22 #4db982;
+  box-shadow:inset 0 0 0 1px rgba(245,242,221,.12);
+}
+#workoutScreen .mini-card .card{
+  box-shadow:2px 2px 0 rgba(0,0,0,.22), inset 0 0 0 2px #f8f3e8;
+}
+#workoutScreen .list-note{
+  background:#efe1be;
+  border:2px solid #856743;
+  box-shadow:inset 0 0 0 1px #f8efdd;
+  padding:8px 10px;
+  color:#523a27;
+  font-family:var(--mono);
+  font-size:.82rem;
+  line-height:1.45;
+}
+#workoutScreen .active-shell{
+  background:#156441;
+  border:4px solid;
+  border-color:#43aa78 #073620 #073620 #66c695;
+  box-shadow:4px 4px 0 rgba(0,0,0,.28), inset 0 0 0 2px rgba(241,226,162,.18);
+}
+#workoutScreen .active-top{
+  padding-bottom:10px;
+  border-bottom:2px solid rgba(255,224,139,.28);
+}
+#workoutScreen .active-top .mono{
+  color:#ffd780;
+}
+#workoutScreen .active-top h2{
+  color:#fff0bf;
+  text-shadow:2px 2px 0 rgba(62,21,8,.35);
+}
+#workoutScreen .active-top .copy{
+  color:#f1ecd2;
+}
+#workoutScreen .active-center .card.large{
+  border-width:4px;
+  border-radius:10px;
+  box-shadow:5px 5px 0 rgba(0,0,0,.3), inset 0 0 0 2px #fff5d8;
+}
+#workoutScreen .active-center .card .topband{
+  border-bottom-width:3px;
+}
+#workoutScreen .active-footnote{
+  color:#fff1c5;
+  background:rgba(72,31,15,.32);
+  border:2px solid rgba(255,207,107,.38);
+  box-shadow:inset 0 0 0 1px rgba(255,244,205,.08);
+  padding:10px 12px;
+}
+#workoutScreen .card-counter{
+  background:#4b120f;
+  color:#ffd579;
+  border:3px solid;
+  border-color:#d4944f #1f0604 #1f0604 #f2bc70;
+  box-shadow:2px 2px 0 rgba(0,0,0,.24);
+}
+#workoutScreen .done-btn{
+  background:#e0b12f;
+  color:#34180b;
+  border-width:3px;
+  border-color:#ffe28a #76500f #76500f #fff0ae;
+  box-shadow:4px 4px 0 rgba(0,0,0,.24);
+  text-shadow:1px 1px 0 rgba(255,242,187,.3);
+}
+#workoutScreen .done-btn:hover{background:#eabb3c}
+#workoutScreen .utility-actions .classic-btn,
+#workoutScreen .finish-actions .classic-btn{
+  min-height:42px;
+  padding:9px 13px;
+  border-width:3px;
+  box-shadow:3px 3px 0 rgba(0,0,0,.22);
+}
+#workoutScreen .utility-actions .classic-btn{
+  background:#d66d2b;
+  color:#fff0d1;
+  border-color:#ffb36b #6a240d #6a240d #ffd8a2;
+}
+#workoutScreen .finish-actions .classic-btn{
+  background:#8d2117;
+  color:#ffe8c0;
+  border-color:#db7b61 #3f0b06 #3f0b06 #f2a28c;
+}
+#workoutScreen .utility-actions .classic-btn:hover{background:#e17a34}
+#workoutScreen .finish-actions .classic-btn:hover{background:#a0281d}
+.summary-grid{display:grid;gap:12px}
+.summary-top{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px}
+.summary-felt{
+  background:var(--felt);
+  border:2px solid #0e663c;min-height:244px;position:relative;overflow:hidden;padding:12px;
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.14)
+}
+.summary-fan{position:absolute;left:20px;right:20px;bottom:12px;height:190px}
+.stat-stack{display:grid;gap:10px}
+.stat-box,.rec-card{background:#efe8da;border:2px solid #8d877d;padding:12px}
+.stat-label{font-family:var(--mono);text-transform:uppercase;font-size:.78rem;color:#565148}
+.stat-value{font-family:var(--display);font-size:clamp(2rem,5vw,3.1rem);font-weight:900;line-height:.9;letter-spacing:-.06em;margin-top:6px}
+.summary-bottom{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px}
+.bar-list{display:grid;gap:10px;margin-top:10px}
+.bar-row{display:grid;gap:4px}
+.bar-head{display:flex;justify-content:space-between;gap:8px;font-size:.95rem;font-weight:800}
+.bar-track{height:22px;background:#efe8db;border:2px solid #757067;border-radius:0;overflow:hidden}
+.bar-fill{height:100%;background:#7aa4db;border-right:2px solid rgba(0,0,0,.2)}
+.rec-list{display:grid;gap:10px;margin-top:10px}
+.note-box{
+  background:#efe8da;
+  border:2px solid #8d877d;
+  padding:14px;
+  line-height:1.4;
+  box-shadow:inset 0 0 0 1px #f4eedf;
+}
+.hidden{display:none !important}
+@media (max-width: 1140px){
+  .deck-top-layout{grid-template-columns:minmax(0,1fr) 248px}
+  .workout-top{grid-template-columns:230px minmax(0,1fr) 124px}
+  .workout-main{grid-template-columns:150px minmax(0,1fr) 150px}
+}
+@media (max-width: 900px){
+  .deck-top-layout{grid-template-columns:1fr}
+  .library-controls{grid-template-columns:1fr auto;align-items:start}
+  .library-controls .search-wrap{grid-column:1/-1}
+  .workout-top{grid-template-columns:1fr}
+  .workout-main{grid-template-columns:1fr}
+  .pile-box{min-height:220px}
+  .mini-pile{height:160px}
+  .summary-top,.summary-bottom{grid-template-columns:1fr}
+}
+@media (max-width: 640px){
+  .app{padding:8px}
+  .window-body{padding:10px}
+  .titlebar{align-items:flex-start}
+  .title-right{width:100%;justify-content:space-between}
+  .title-note{display:none}
+  .library-controls{grid-template-columns:1fr}
+  .library-grid{grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:10px}
+  .card,.card-wrap{width:138px;min-width:138px}
+  .card{height:200px}
+  .card .name{font-size:17px;min-height:62px}
+  .deck-stage{min-height:286px}
+  .deck-surface{height:216px}
+  .active-shell{min-height:380px}
+  .done-btn{min-width:0;width:100%}
+  .active-bottom{align-items:stretch}
+  .summary-fan{left:8px;right:8px}
+  .workout-bottom{justify-content:stretch}
+  .utility-actions,.finish-actions{width:100%}
+  .utility-actions .classic-btn,.finish-actions .classic-btn{flex:1}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="window">
+    <div class="titlebar">
+      <div class="title-left">
+        <h1>Workout Deck</h1>
+      </div>
+        <div class="title-right">
+        <div class="title-note">desk accessory build 04</div>
+        <button id="homeBtn" class="home-btn" type="button">Return home</button>
+      </div>
+    </div>
+
+    <div class="window-body">
+      <section id="builderScreen" class="screen active">
+        <div class="stack">
+          <div class="panel pad">
+            <div class="section-head">
+              <div class="header-cluster">
+                <div class="icon-tile" aria-hidden="true">
+                  <svg viewBox="0 0 32 32">
+                    <rect x="4" y="7" width="12" height="16" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                    <rect x="10" y="11" width="12" height="16" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                    <rect x="16" y="5" width="12" height="16" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="section-title">Hand</h2>
+                </div>
+              </div>
+            </div>
+            <div class="deck-top-layout">
+              <div class="deck-stage" id="deckDropZone">
+                <div id="handCountBubble" class="hand-count-bubble" aria-live="polite">
+                  <span id="deckMetaChip" class="hand-count-num">0</span>
+                  <span class="hand-count-label">In hand</span>
+                </div>
+                <div class="deck-surface" id="deckSurface"></div>
+                <button id="clearDeckBtn" class="classic-btn btn-muted deck-clear-btn">Clear hand</button>
+              </div>
+              <div class="deck-side">
+                <div class="mini-panel">
+                  <div class="mono">Quick draw</div>
+                  <div class="control-row" style="align-items:stretch">
+                    <button id="drawSevenBtn" class="classic-btn btn-random" style="flex:1">Draw 7</button>
+                    <button id="drawOneBtn" class="classic-btn btn-alt">Draw 1</button>
+                  </div>
+                </div>
+                <button id="startWorkoutBtn" class="classic-btn btn-start btn-primary-cta">Start session</button>
+                <div class="mini-panel balance-panel">
+                  <div class="balance-title-row">
+                    <div class="mono">Hand balance</div>
+                    <div id="handBalanceMeta" class="mono">0 muscles</div>
+                  </div>
+                  <div id="handBalanceList" class="balance-mini-list"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel pad">
+            <div class="library-top">
+              <div class="section-head">
+                <div class="header-cluster">
+                  <div class="icon-tile" aria-hidden="true">
+                    <svg viewBox="0 0 32 32">
+                      <rect x="6" y="6" width="20" height="18" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                      <rect x="11" y="9" width="10" height="8" fill="none" stroke="#222" stroke-width="2"/>
+                      <rect x="14" y="24" width="4" height="3" fill="#222"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 class="section-title">Library</h2>
+                  </div>
+                </div>
+                <div class="mono" id="libraryMeta">10 visible · 0 matching · 0 total</div>
+              </div>
+              <div class="library-controls">
+                <div class="search-wrap">
+                  <input id="searchInput" class="search-input" type="text" list="librarySuggestions" placeholder="Search workout name, category, or muscle..." />
+                  <datalist id="librarySuggestions"></datalist>
+                </div>
+                <button id="differentTenBtn" class="classic-btn btn-small btn-feature">Show me a different 10</button>
+                <button id="clearSearchBtn" class="classic-btn btn-small">Clear search</button>
+              </div>
+              <div class="filter-strip" id="filterStrip"></div>
+              <div id="libraryGrid" class="library-grid"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="workoutScreen" class="screen">
+        <div class="workout-grid">
+          <div class="workout-top">
+            <div class="panel pad timer-panel">
+              <div class="mono">Current exercise</div>
+              <div id="exerciseTimer" class="big-timer">00:00</div>
+              <div id="totalTimerLine" class="small-timer">00:00 + 00:00 = 00:00</div>
+            </div>
+
+            <div class="panel pad state-panel">
+              <div class="icon-tile" aria-hidden="true">
+                <svg viewBox="0 0 32 32">
+                  <rect x="3" y="8" width="12" height="16" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                  <rect x="10" y="6" width="12" height="16" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                  <rect x="17" y="10" width="12" height="16" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                </svg>
+              </div>
+              <div>
+                <div class="mono">Table state</div>
+                <h2 class="state-title">Watch the hand shrink as you work through it.</h2>
+                <div class="copy">Done cards move to the completed pile. Skipped cards stay out of the muscle totals.</div>
+              </div>
+            </div>
+
+            <div class="panel pause-panel">
+              <button id="pauseBtn" class="classic-btn pause-btn">Pause</button>
+            </div>
+          </div>
+
+          <div class="workout-main">
+            <div class="panel pile-box">
+              <div>
+                <div class="pile-title">Remaining pile</div>
+                <div id="remainingMeta" class="pile-sub">0 cards left</div>
+              </div>
+              <div id="remainingPile" class="mini-pile"></div>
+              <div id="remainingList" class="list-note"></div>
+            </div>
+
+            <div class="active-shell">
+              <div class="active-top">
+                <div>
+                  <div class="mono" id="cardPosition">Card 1 of 1</div>
+                  <h2>In play</h2>
+                  <div id="workoutStateCopy" class="copy">Big card front and center, like a card table.</div>
+                </div>
+                <div class="card-counter" id="workoutStateChip">Running</div>
+              </div>
+              <div class="active-center" id="activeCardSlot"></div>
+              <div class="active-bottom">
+                <div class="active-footnote" id="activeFootnote">Use Done when you finish the exercise. Skip leaves it out of the final muscle totals.</div>
+                <button id="doneBtn" class="classic-btn done-btn">Done with this card</button>
+              </div>
+            </div>
+
+            <div class="panel pile-box">
+              <div>
+                <div class="pile-title">Completed pile</div>
+                <div id="doneMeta" class="pile-sub">0 done · 0 skipped</div>
+              </div>
+              <div id="donePile" class="mini-pile"></div>
+              <div id="doneList" class="list-note">Nothing done yet.</div>
+            </div>
+          </div>
+
+          <div class="workout-bottom">
+            <div class="utility-actions">
+              <button id="prevBtn" class="classic-btn btn-alt">Previous</button>
+              <button id="skipBtn" class="classic-btn btn-alt">Skip this card</button>
+            </div>
+            <div class="finish-actions">
+              <button id="finishBtn" class="classic-btn btn-clear">Finish workout</button>
+              <button id="backToDeckBtn" class="classic-btn">Back to hand</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="summaryScreen" class="screen">
+        <div class="summary-grid">
+          <div class="summary-top">
+            <div class="summary-felt">
+              <div class="pile-title" style="color:#eef5ef">Session hand</div>
+              <div id="summaryFan" class="summary-fan"></div>
+            </div>
+            <div class="stat-stack">
+              <div class="stat-box"><div class="stat-label">Total elapsed</div><div id="summaryTime" class="stat-value">00:00</div></div>
+              <div class="stat-box"><div class="stat-label">Completed</div><div id="summaryCompleted" class="stat-value">0</div></div>
+              <div class="stat-box"><div class="stat-label">Skipped</div><div id="summarySkipped" class="stat-value">0</div></div>
+              <button id="backToBuilderBtn" class="classic-btn btn-start">Back to hand builder</button>
+            </div>
+          </div>
+
+          <div class="summary-bottom">
+            <div class="panel pad">
+              <div class="section-head">
+                <div class="header-cluster">
+                  <div class="icon-tile" aria-hidden="true">
+                    <svg viewBox="0 0 32 32">
+                      <rect x="6" y="7" width="20" height="18" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                      <rect x="13" y="5" width="6" height="2" fill="#222"/>
+                      <circle cx="16" cy="16" r="5" fill="none" stroke="#222" stroke-width="2"/>
+                      <line x1="16" y1="16" x2="16" y2="12" stroke="#222" stroke-width="2"/>
+                      <line x1="16" y1="16" x2="19" y2="18" stroke="#222" stroke-width="2"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 class="section-title" style="font-size:2.2rem">Muscles worked</h2>
+                    <div class="copy">Counted from the cards you marked Done.</div>
+                  </div>
+                </div>
+              </div>
+              <div id="barList" class="bar-list"></div>
+            </div>
+
+            <div class="panel pad">
+              <div class="section-head">
+                <div>
+                  <h2 class="section-title" style="font-size:2.1rem">Next time</h2>
+                  <div class="copy">A quick read on what got the most attention and what was neglected.</div>
+                </div>
+              </div>
+              <div class="rec-list">
+                <div class="rec-card" id="mostWorkedCard"></div>
+                <div class="rec-card" id="nextTimeCard"></div>
+                <div class="rec-card" id="notesCard"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="infoPopup" class="info-popup hidden" aria-hidden="true">
+  <div class="card-info-head">
+    <div id="infoPopupTitle" class="card-info-title">Exercise note</div>
+    <div id="infoPopupHide" class="classic-btn btn-muted card-info-hide" role="button" tabindex="0">Hide</div>
+  </div>
+  <div class="card-info-section">
+    <div class="card-info-label">How to do it</div>
+    <div id="infoPopupHowTo" class="card-info-copy"></div>
+  </div>
+  <div class="card-info-section">
+    <div class="card-info-label">Tip</div>
+    <div id="infoPopupTip" class="card-info-copy"></div>
+  </div>
+  <div class="card-info-section">
+    <div class="card-info-label">Couplet</div>
+    <div id="infoPopupCouplet" class="card-info-copy card-info-couplet"></div>
+  </div>
+</div>
+
+<script>
+const EXERCISES = [{"id": "ex1", "title": "Push-Ups", "category": "push", "primary": ["Chest", "Triceps"], "secondary": ["Shoulders", "Core"]}, {"id": "ex2", "title": "Pike Push-Ups", "category": "push", "primary": ["Shoulders"], "secondary": ["Triceps", "Upper Chest"]}, {"id": "ex3", "title": "Scapular Push-Ups", "category": "push", "primary": ["Serratus"], "secondary": ["Chest", "Shoulders"]}, {"id": "ex4", "title": "Tempo Push-Ups", "category": "push", "primary": ["Chest", "Triceps"], "secondary": ["Core", "Shoulders"]}, {"id": "ex5", "title": "Diamond Push-Ups", "category": "push", "primary": ["Triceps", "Chest"], "secondary": ["Shoulders"]}, {"id": "ex6", "title": "Wide Push-Ups", "category": "push", "primary": ["Chest"], "secondary": ["Shoulders", "Triceps"]}, {"id": "ex7", "title": "Decline Push-Ups", "category": "push", "primary": ["Upper Chest", "Shoulders"], "secondary": ["Triceps", "Core"]}, {"id": "ex8", "title": "Knee Push-Ups", "category": "push", "primary": ["Chest"], "secondary": ["Triceps", "Core"]}, {"id": "ex9", "title": "Pseudo Planche Push-Ups", "category": "push", "primary": ["Shoulders", "Chest"], "secondary": ["Wrists", "Core"]}, {"id": "ex10", "title": "Wall Push Holds", "category": "push", "primary": ["Chest", "Shoulders"], "secondary": ["Triceps"]}, {"id": "ex11", "title": "Down Dog Push-Ups", "category": "push", "primary": ["Shoulders"], "secondary": ["Upper Chest", "Triceps"]}, {"id": "ex12", "title": "Push-Up Shoulder Taps", "category": "push", "primary": ["Chest", "Core"], "secondary": ["Shoulders", "Obliques"]}, {"id": "ex13", "title": "Air Squats", "category": "legs", "primary": ["Quads", "Glutes"], "secondary": ["Hamstrings", "Core"]}, {"id": "ex14", "title": "Split Squats", "category": "legs", "primary": ["Quads", "Glutes"], "secondary": ["Hamstrings", "Balance"]}, {"id": "ex15", "title": "Reverse Lunges", "category": "legs", "primary": ["Glutes", "Quads"], "secondary": ["Hamstrings", "Balance"]}, {"id": "ex16", "title": "Glute Bridge", "category": "legs", "primary": ["Glutes"], "secondary": ["Hamstrings", "Core"]}, {"id": "ex17", "title": "Single-Leg Glute Bridge", "category": "legs", "primary": ["Glutes", "Hamstrings"], "secondary": ["Core", "Balance"]}, {"id": "ex18", "title": "Wall Sit", "category": "legs", "primary": ["Quads"], "secondary": ["Glutes", "Core"]}, {"id": "ex19", "title": "Cossack Squat", "category": "legs", "primary": ["Adductors", "Glutes"], "secondary": ["Quads", "Mobility"]}, {"id": "ex20", "title": "Skater Squats", "category": "legs", "primary": ["Quads", "Glutes"], "secondary": ["Balance", "Core"]}, {"id": "ex21", "title": "Step-Back Lunge", "category": "legs", "primary": ["Glutes", "Quads"], "secondary": ["Hamstrings", "Calves"]}, {"id": "ex22", "title": "Calf Raises", "category": "legs", "primary": ["Calves"], "secondary": ["Balance"]}, {"id": "ex23", "title": "Lateral Lunges", "category": "legs", "primary": ["Glutes", "Adductors"], "secondary": ["Quads", "Hamstrings"]}, {"id": "ex24", "title": "Good Morning Hinge", "category": "legs", "primary": ["Hamstrings", "Glutes"], "secondary": ["Lower Back"]}, {"id": "ex25", "title": "Sumo Squats", "category": "legs", "primary": ["Glutes", "Adductors"], "secondary": ["Quads", "Core"]}, {"id": "ex26", "title": "Hip Airplanes", "category": "legs", "primary": ["Glutes"], "secondary": ["Balance", "Hamstrings"]}, {"id": "ex27", "title": "Dead Bug", "category": "core", "primary": ["Abs"], "secondary": ["Hip Flexors", "Coordination"]}, {"id": "ex28", "title": "Hollow Hold", "category": "core", "primary": ["Abs"], "secondary": ["Hip Flexors"]}, {"id": "ex29", "title": "Mountain Climbers", "category": "core", "primary": ["Abs", "Shoulders"], "secondary": ["Cardio", "Hip Flexors"]}, {"id": "ex30", "title": "Plank", "category": "core", "primary": ["Abs"], "secondary": ["Shoulders", "Glutes"]}, {"id": "ex31", "title": "Side Plank", "category": "core", "primary": ["Obliques"], "secondary": ["Shoulders", "Glutes"]}, {"id": "ex32", "title": "Bird Dog", "category": "core", "primary": ["Lower Back", "Abs"], "secondary": ["Glutes", "Coordination"]}, {"id": "ex33", "title": "V-Ups", "category": "core", "primary": ["Abs"], "secondary": ["Hip Flexors"]}, {"id": "ex34", "title": "Flutter Kicks", "category": "core", "primary": ["Hip Flexors"], "secondary": ["Abs"]}, {"id": "ex35", "title": "Bicycle Crunches", "category": "core", "primary": ["Obliques", "Abs"], "secondary": ["Hip Flexors"]}, {"id": "ex36", "title": "Bear Crawl Hold", "category": "core", "primary": ["Core", "Shoulders"], "secondary": ["Quads", "Coordination"]}, {"id": "ex37", "title": "Toe Touch Crunches", "category": "core", "primary": ["Abs"], "secondary": ["Hamstrings"]}, {"id": "ex38", "title": "Reverse Crunches", "category": "core", "primary": ["Lower Abs"], "secondary": ["Hip Flexors"]}, {"id": "ex39", "title": "World's Greatest Stretch", "category": "mobility", "primary": ["Mobility"], "secondary": ["Hamstrings", "Hip Flexors"]}, {"id": "ex40", "title": "Cat-Cow", "category": "mobility", "primary": ["Spine Mobility"], "secondary": ["Abs"]}, {"id": "ex41", "title": "Thoracic Rotations", "category": "mobility", "primary": ["T-Spine"], "secondary": ["Shoulders"]}, {"id": "ex42", "title": "Hip Hinge Reach", "category": "mobility", "primary": ["Hamstrings"], "secondary": ["Glutes", "Mobility"]}, {"id": "ex43", "title": "Deep Squat Hold", "category": "mobility", "primary": ["Mobility"], "secondary": ["Adductors", "Ankles"]}, {"id": "ex44", "title": "90/90 Switches", "category": "mobility", "primary": ["Hips"], "secondary": ["Glutes", "Mobility"]}, {"id": "ex45", "title": "Hamstring Sweep", "category": "mobility", "primary": ["Hamstrings"], "secondary": ["Calves"]}, {"id": "ex46", "title": "Open Book", "category": "mobility", "primary": ["T-Spine"], "secondary": ["Chest"]}, {"id": "ex47", "title": "Downward Dog", "category": "mobility", "primary": ["Hamstrings", "Shoulders"], "secondary": ["Calves", "Mobility"]}, {"id": "ex48", "title": "Lunge With Reach", "category": "mobility", "primary": ["Hip Flexors"], "secondary": ["T-Spine", "Glutes"]}, {"id": "ex49", "title": "Ankle Rocks", "category": "mobility", "primary": ["Ankles"], "secondary": ["Calves"]}, {"id": "ex50", "title": "Shoulder CARs", "category": "mobility", "primary": ["Shoulders"], "secondary": ["Mobility"]}, {"id": "ex51", "title": "Prone Y Raise", "category": "posture", "primary": ["Upper Back"], "secondary": ["Rear Delts"]}, {"id": "ex52", "title": "Prone T Raise", "category": "posture", "primary": ["Upper Back"], "secondary": ["Rear Delts", "Mid Back"]}, {"id": "ex53", "title": "Wall Angels", "category": "posture", "primary": ["Upper Back", "Shoulders"], "secondary": ["T-Spine"]}, {"id": "ex54", "title": "Cobra Lift", "category": "posture", "primary": ["Upper Back"], "secondary": ["Glutes", "Lower Back"]}, {"id": "ex55", "title": "Scap Retraction Hold", "category": "posture", "primary": ["Mid Back"], "secondary": ["Rear Delts"]}, {"id": "ex56", "title": "Chin Tucks", "category": "posture", "primary": ["Neck"], "secondary": ["Upper Back"]}, {"id": "ex57", "title": "Floor Swimmers", "category": "posture", "primary": ["Upper Back", "Shoulders"], "secondary": ["Glutes"]}, {"id": "ex58", "title": "Reverse Snow Angels", "category": "posture", "primary": ["Upper Back"], "secondary": ["Rear Delts", "Shoulders"]}, {"id": "ex59", "title": "Doorway Chest Opener", "category": "posture", "primary": ["Chest Mobility"], "secondary": ["Shoulders"]}, {"id": "ex60", "title": "Standing Posture Reset", "category": "posture", "primary": ["Upper Back"], "secondary": ["Core"]}, {"id": "ex61", "title": "Jumping Jacks", "category": "cardio", "primary": ["Cardio"], "secondary": ["Shoulders", "Calves"]}, {"id": "ex62", "title": "High Knees", "category": "cardio", "primary": ["Cardio"], "secondary": ["Hip Flexors", "Calves"]}, {"id": "ex63", "title": "Butt Kicks", "category": "cardio", "primary": ["Cardio"], "secondary": ["Hamstrings", "Calves"]}, {"id": "ex64", "title": "Fast Feet", "category": "cardio", "primary": ["Cardio"], "secondary": ["Calves", "Quads"]}, {"id": "ex65", "title": "Squat Thrusts", "category": "cardio", "primary": ["Cardio", "Quads"], "secondary": ["Shoulders", "Core"]}, {"id": "ex66", "title": "Burpees", "category": "cardio", "primary": ["Cardio", "Chest"], "secondary": ["Quads", "Core"]}, {"id": "ex67", "title": "Seal Jacks", "category": "cardio", "primary": ["Cardio"], "secondary": ["Chest", "Shoulders"]}, {"id": "ex68", "title": "Marching in Place", "category": "cardio", "primary": ["Cardio"], "secondary": ["Hip Flexors"]}, {"id": "ex69", "title": "Lateral Shuffles", "category": "cardio", "primary": ["Cardio"], "secondary": ["Glutes", "Calves"]}, {"id": "ex70", "title": "Power Skips", "category": "cardio", "primary": ["Cardio"], "secondary": ["Calves", "Glutes"]}, {"id": "ex71", "title": "Shadow Boxing", "category": "cardio", "primary": ["Cardio", "Shoulders"], "secondary": ["Core", "Coordination"]}, {"id": "ex72", "title": "Speed Skaters", "category": "cardio", "primary": ["Cardio", "Glutes"], "secondary": ["Balance", "Quads"]}, {"id": "ex73", "title": "Single-Leg Stand", "category": "balance", "primary": ["Balance"], "secondary": ["Glutes", "Calves"]}, {"id": "ex74", "title": "Single-Leg Reach", "category": "balance", "primary": ["Balance", "Glutes"], "secondary": ["Hamstrings", "Core"]}, {"id": "ex75", "title": "Tree Pose", "category": "balance", "primary": ["Balance"], "secondary": ["Glutes", "Core"]}, {"id": "ex76", "title": "Heel-to-Toe Walk", "category": "balance", "primary": ["Balance"], "secondary": ["Calves", "Core"]}, {"id": "ex77", "title": "Clock Reach", "category": "balance", "primary": ["Balance", "Glutes"], "secondary": ["Quads", "Core"]}, {"id": "ex78", "title": "Single-Leg Hinge", "category": "balance", "primary": ["Balance", "Hamstrings"], "secondary": ["Glutes", "Core"]}, {"id": "ex79", "title": "Lateral Balance Tap", "category": "balance", "primary": ["Balance"], "secondary": ["Glutes", "Adductors"]}, {"id": "ex80", "title": "Toe Yoga", "category": "balance", "primary": ["Feet"], "secondary": ["Balance"]}, {"id": "ex81", "title": "Stork Hold", "category": "balance", "primary": ["Balance"], "secondary": ["Hip Flexors", "Calves"]}, {"id": "ex82", "title": "Curtsy Balance Reach", "category": "balance", "primary": ["Glutes", "Balance"], "secondary": ["Adductors", "Core"]}, {"id": "ex83", "title": "Airplane Balance", "category": "balance", "primary": ["Balance", "Glutes"], "secondary": ["Hamstrings"]}, {"id": "ex84", "title": "Knee Drive Hold", "category": "balance", "primary": ["Balance"], "secondary": ["Hip Flexors", "Core"]}, {"title": "Wall Push-Ups", "category": "push", "primary": ["Chest"], "secondary": ["Shoulders", "Triceps"], "id": "ex85"}, {"title": "Hand-Release Push-Ups", "category": "push", "primary": ["Chest", "Triceps"], "secondary": ["Shoulders"], "id": "ex86"}, {"title": "Hindu Push-Ups", "category": "push", "primary": ["Shoulders", "Chest"], "secondary": ["Triceps", "Mobility"], "id": "ex87"}, {"title": "Incline Floor Press Pulse", "category": "push", "primary": ["Chest"], "secondary": ["Triceps"], "id": "ex88"}, {"title": "Wall Sit March", "category": "legs", "primary": ["Quads"], "secondary": ["Core", "Hip Flexors"], "id": "ex89"}, {"title": "Split Squat Pulse", "category": "legs", "primary": ["Quads", "Glutes"], "secondary": ["Hamstrings"], "id": "ex90"}, {"title": "Side Lunge", "category": "legs", "primary": ["Adductors", "Glutes"], "secondary": ["Quads"], "id": "ex91"}, {"title": "Single-Leg Calf Raise", "category": "legs", "primary": ["Calves"], "secondary": ["Balance"], "id": "ex92"}, {"title": "Dead Bug Hold", "category": "core", "primary": ["Abs"], "secondary": ["Coordination"], "id": "ex93"}, {"title": "Plank Shoulder Taps", "category": "core", "primary": ["Core", "Shoulders"], "secondary": ["Chest"], "id": "ex94"}, {"title": "Side Plank Dips", "category": "core", "primary": ["Obliques"], "secondary": ["Shoulders", "Glutes"], "id": "ex95"}, {"title": "Thread the Needle", "category": "mobility", "primary": ["T-Spine"], "secondary": ["Shoulders", "Mobility"], "id": "ex96"}, {"title": "Kneeling Adductor Rock", "category": "mobility", "primary": ["Adductors"], "secondary": ["Hips", "Mobility"], "id": "ex97"}, {"title": "Open Gate", "category": "mobility", "primary": ["Hips"], "secondary": ["Balance"], "id": "ex98"}, {"title": "Prone Snow Angel Hold", "category": "posture", "primary": ["Upper Back"], "secondary": ["Shoulders"], "id": "ex99"}, {"title": "Scap Push-Up", "category": "posture", "primary": ["Serratus"], "secondary": ["Shoulders", "Core"], "id": "ex100"}, {"title": "Back Pocket Squeeze", "category": "posture", "primary": ["Mid Back"], "secondary": ["Posture"], "id": "ex101"}, {"title": "Pogo Hops", "category": "cardio", "primary": ["Cardio", "Calves"], "secondary": ["Balance"], "id": "ex102"}, {"title": "Boxer Bounce", "category": "cardio", "primary": ["Cardio"], "secondary": ["Calves", "Coordination"], "id": "ex103"}, {"title": "Carioca Step", "category": "cardio", "primary": ["Cardio", "Coordination"], "secondary": ["Glutes"], "id": "ex104"}, {"title": "Flamingo Reach", "category": "balance", "primary": ["Balance"], "secondary": ["Glutes", "Core"], "id": "ex105"}, {"title": "Star Balance Tap", "category": "balance", "primary": ["Balance", "Glutes"], "secondary": ["Core"], "id": "ex106"}, {"title": "Single-Leg Calf Raise Hold", "category": "balance", "primary": ["Balance", "Calves"], "secondary": ["Feet"], "id": "ex107"}, {"title": "Eyes-Closed Stand", "category": "balance", "primary": ["Balance"], "secondary": ["Core"], "id": "ex108"}];
+
+const CATEGORY_META = {
+  all:{label:"All", short:"ALL"},
+  push:{label:"Push", short:"PUSH"},
+  legs:{label:"Legs", short:"LEGS"},
+  core:{label:"Core", short:"CORE"},
+  mobility:{label:"Mobility", short:"MOVE"},
+  posture:{label:"Posture", short:"POST"},
+  cardio:{label:"Cardio", short:"CARD"},
+  balance:{label:"Balance", short:"BAL"}
+};
+
+const CATEGORY_ORDER = ["all","push","legs","core","mobility","posture","cardio","balance"];
+const MAX_DECK = 16;
+const BALANCE_GROUPS = CATEGORY_ORDER.filter(key => key !== "all");
+
+const state = {
+  deck: [],
+  focusedDeckId: null,
+  focusedLibraryId: null,
+  highlightedMuscle: null,
+  search: "",
+  category: "all",
+  visibleIds: [],
+  workoutDeck: [],
+  workoutTimes: [],
+  currentIndex: 0,
+  completed: new Set(),
+  skipped: new Set(),
+  running: false,
+  interval: null,
+  infoAnchor: null,
+  dragSession: null,
+  suppressClickUntil: 0
+};
+
+const els = {
+  builderScreen: document.getElementById("builderScreen"),
+  workoutScreen: document.getElementById("workoutScreen"),
+  summaryScreen: document.getElementById("summaryScreen"),
+  handCountBubble: document.getElementById("handCountBubble"),
+  deckSurface: document.getElementById("deckSurface"),
+  deckDropZone: document.getElementById("deckDropZone"),
+  deckMetaChip: document.getElementById("deckMetaChip"),
+  searchInput: document.getElementById("searchInput"),
+  librarySuggestions: document.getElementById("librarySuggestions"),
+  homeBtn: document.getElementById("homeBtn"),
+  clearSearchBtn: document.getElementById("clearSearchBtn"),
+  differentTenBtn: document.getElementById("differentTenBtn"),
+  filterStrip: document.getElementById("filterStrip"),
+  libraryGrid: document.getElementById("libraryGrid"),
+  libraryMeta: document.getElementById("libraryMeta"),
+  drawSevenBtn: document.getElementById("drawSevenBtn"),
+  drawOneBtn: document.getElementById("drawOneBtn"),
+  clearDeckBtn: document.getElementById("clearDeckBtn"),
+  startWorkoutBtn: document.getElementById("startWorkoutBtn"),
+  handBalanceMeta: document.getElementById("handBalanceMeta"),
+  handBalanceList: document.getElementById("handBalanceList"),
+  exerciseTimer: document.getElementById("exerciseTimer"),
+  totalTimerLine: document.getElementById("totalTimerLine"),
+  remainingMeta: document.getElementById("remainingMeta"),
+  doneMeta: document.getElementById("doneMeta"),
+  remainingPile: document.getElementById("remainingPile"),
+  remainingList: document.getElementById("remainingList"),
+  donePile: document.getElementById("donePile"),
+  doneList: document.getElementById("doneList"),
+  cardPosition: document.getElementById("cardPosition"),
+  workoutStateChip: document.getElementById("workoutStateChip"),
+  workoutStateCopy: document.getElementById("workoutStateCopy"),
+  activeCardSlot: document.getElementById("activeCardSlot"),
+  activeFootnote: document.getElementById("activeFootnote"),
+  pauseBtn: document.getElementById("pauseBtn"),
+  prevBtn: document.getElementById("prevBtn"),
+  skipBtn: document.getElementById("skipBtn"),
+  finishBtn: document.getElementById("finishBtn"),
+  backToDeckBtn: document.getElementById("backToDeckBtn"),
+  doneBtn: document.getElementById("doneBtn"),
+  summaryFan: document.getElementById("summaryFan"),
+  summaryTime: document.getElementById("summaryTime"),
+  summaryCompleted: document.getElementById("summaryCompleted"),
+  summarySkipped: document.getElementById("summarySkipped"),
+  barList: document.getElementById("barList"),
+  mostWorkedCard: document.getElementById("mostWorkedCard"),
+  nextTimeCard: document.getElementById("nextTimeCard"),
+  notesCard: document.getElementById("notesCard"),
+  backToBuilderBtn: document.getElementById("backToBuilderBtn"),
+  infoPopup: document.getElementById("infoPopup"),
+  infoPopupTitle: document.getElementById("infoPopupTitle"),
+  infoPopupHowTo: document.getElementById("infoPopupHowTo"),
+  infoPopupTip: document.getElementById("infoPopupTip"),
+  infoPopupCouplet: document.getElementById("infoPopupCouplet"),
+  infoPopupHide: document.getElementById("infoPopupHide")
+};
+
+function byId(id){ return EXERCISES.find(x => x.id === id); }
+function shuffle(arr){
+  const copy = [...arr];
+  for(let i = copy.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+function formatTime(total){
+  const m = String(Math.floor(total / 60)).padStart(2,"0");
+  const s = String(total % 60).padStart(2,"0");
+  return `${m}:${s}`;
+}
+function totalElapsed(){
+  return state.workoutTimes.reduce((a,b)=>a+b,0);
+}
+function getMuscleScores(ids, {secondaryWeight=0.5} = {}){
+  const scores = {};
+  ids.forEach(id => {
+    const ex = byId(id);
+    if(!ex) return;
+    ex.primary.forEach(m => scores[m] = (scores[m] || 0) + 1);
+    ex.secondary.forEach(m => scores[m] = (scores[m] || 0) + secondaryWeight);
+  });
+  return scores;
+}
+function getBalanceGroupsForExercise(ex){
+  return new Set([ex.category]);
+}
+function getBalanceGroupScores(ids){
+  const scores = Object.fromEntries(BALANCE_GROUPS.map(label => [label, 0]));
+  ids.forEach(id => {
+    const ex = byId(id);
+    if(!ex) return;
+    getBalanceGroupsForExercise(ex).forEach(label => {
+      scores[label] += 1;
+    });
+  });
+  return scores;
+}
+function populateSuggestions(){
+  const curated = [
+    "Push", "Legs", "Core", "Mobility", "Posture", "Cardio", "Balance",
+    "Chest", "Shoulders", "Triceps", "Quads", "Glutes", "Hamstrings", "Calves",
+    "Abs", "Obliques", "Lower Back", "Upper Back", "T-Spine", "Hips", "Ankles",
+    "Push-Ups", "Squats", "Lunges", "Plank", "Mobility", "Balance"
+  ];
+  const ordered = [];
+  const seen = new Set();
+  [...curated, ...EXERCISES.flatMap(ex => [ex.title, ex.category, ...ex.primary, ...ex.secondary])].forEach(label => {
+    const trimmed = String(label).trim();
+    const key = trimmed.toLowerCase();
+    if(!trimmed || seen.has(key)) return;
+    seen.add(key);
+    ordered.push(trimmed);
+  });
+  els.librarySuggestions.innerHTML = ordered.slice(0, 60).map(value => `<option value="${value}"></option>`).join("");
+}
+function getFilteredExercises(){
+  const q = state.search.trim().toLowerCase();
+  return EXERCISES.filter(ex => {
+    if(state.category !== "all" && ex.category !== state.category) return false;
+    if(!q) return true;
+    const hay = [
+      ex.title,
+      ex.category,
+      ...ex.primary,
+      ...ex.secondary
+    ].join(" ").toLowerCase();
+    return hay.includes(q);
+  });
+}
+function getAvailableLibraryExercises(){
+  return getFilteredExercises().filter(ex => !state.deck.includes(ex.id));
+}
+function sampleIds(list, count){
+  if(list.length <= count) return list.map(x => x.id);
+  const shuffled = shuffle(list.map(x => x.id));
+  return shuffled.slice(0, count);
+}
+function pickVisibleBatch(){
+  const available = getAvailableLibraryExercises();
+  state.visibleIds = sampleIds(available, 10);
+  renderLibrary();
+}
+function setScreen(name){
+  for(const el of [els.builderScreen, els.workoutScreen, els.summaryScreen]){
+    el.classList.remove("active");
+  }
+  els[name].classList.add("active");
+}
+function addToDeck(id){
+  if(state.deck.includes(id) || state.deck.length >= MAX_DECK) return;
+  state.deck = [...state.deck, id];
+  if(state.focusedLibraryId === id) state.focusedLibraryId = null;
+  renderDeck();
+  renderLibrary();
+}
+function insertIntoDeck(id, index = state.deck.length){
+  if(state.deck.includes(id) || state.deck.length >= MAX_DECK) return;
+  const next = [...state.deck];
+  const clampedIndex = Math.max(0, Math.min(next.length, index));
+  next.splice(clampedIndex, 0, id);
+  state.deck = next;
+  renderDeck();
+  renderLibrary();
+}
+function removeFromDeck(id){
+  state.deck = state.deck.filter(x => x !== id);
+  if(state.focusedDeckId === id) state.focusedDeckId = null;
+  renderDeck();
+  renderLibrary();
+}
+function moveDeckCard(id, index = state.deck.length - 1){
+  const currentIndex = state.deck.indexOf(id);
+  if(currentIndex === -1) return;
+  const next = [...state.deck];
+  next.splice(currentIndex, 1);
+  const clampedIndex = Math.max(0, Math.min(next.length, index));
+  next.splice(clampedIndex, 0, id);
+  state.deck = next;
+  renderDeck();
+  renderLibrary();
+}
+function focusDeckCard(id){
+  if(!state.deck.includes(id)) return;
+  state.focusedDeckId = state.focusedDeckId === id ? null : id;
+  renderDeck();
+}
+function focusLibraryCard(id){
+  const available = getAvailableLibraryExercises();
+  if(!available.some(ex => ex.id === id)){
+    state.focusedLibraryId = null;
+    renderLibrary();
+    return;
+  }
+  state.focusedLibraryId = state.focusedLibraryId === id ? null : id;
+  renderLibrary();
+}
+function toggleHighlightedMuscle(muscle){
+  state.highlightedMuscle = state.highlightedMuscle === muscle ? null : muscle;
+  renderHandBalance();
+  renderDeck();
+}
+function clearBuilderDragState(){
+  els.deckDropZone.classList.remove("drag-over");
+  document.querySelectorAll(".dragging,.drag-over").forEach(el => {
+    el.classList.remove("dragging", "drag-over");
+  });
+}
+function shouldSuppressClick(){
+  return Date.now() < state.suppressClickUntil;
+}
+function makeDragGhost(sourceEl, x, y){
+  const ghost = sourceEl.cloneNode(true);
+  ghost.classList.add("drag-ghost");
+  ghost.removeAttribute("role");
+  ghost.removeAttribute("tabindex");
+  document.body.appendChild(ghost);
+  positionDragGhost(ghost, x, y);
+  return ghost;
+}
+function positionDragGhost(ghost, x, y){
+  if(!state.dragSession) return;
+  ghost.style.left = `${x - state.dragSession.offsetX}px`;
+  ghost.style.top = `${y - state.dragSession.offsetY}px`;
+}
+function getBuilderDropTarget(x, y){
+  const hit = document.elementFromPoint(x, y);
+  if(!hit) return {kind:"none"};
+  const deckCard = hit.closest(".deck-card");
+  if(deckCard && els.deckSurface.contains(deckCard)){
+    return {
+      kind:"deck-card",
+      element:deckCard,
+      index:Number(deckCard.dataset.deckIndex || 0)
+    };
+  }
+  if(hit.closest("#deckDropZone")) return {kind:"deck-zone"};
+  if(hit.closest(".library-top")) return {kind:"library"};
+  return {kind:"none"};
+}
+function highlightBuilderDropTarget(target, sourceEl){
+  clearBuilderDragState();
+  if(!state.dragSession) return;
+  state.dragSession.sourceEl.classList.add("dragging");
+  if(target.kind === "deck-card" && target.element !== sourceEl){
+    target.element.classList.add("drag-over");
+    return;
+  }
+  if(target.kind === "deck-zone" || (target.kind === "deck-card" && target.element === sourceEl)){
+    els.deckDropZone.classList.add("drag-over");
+  }
+}
+function finishBuilderPointerDrag(ev){
+  const session = state.dragSession;
+  if(!session || ev.pointerId !== session.pointerId) return;
+  window.removeEventListener("pointermove", handleBuilderPointerMove);
+  window.removeEventListener("pointerup", finishBuilderPointerDrag);
+  window.removeEventListener("pointercancel", finishBuilderPointerDrag);
+  if(session.sourceEl.releasePointerCapture){
+    try{ session.sourceEl.releasePointerCapture(session.pointerId); }catch(err){}
+  }
+  if(session.didDrag){
+    state.suppressClickUntil = Date.now() + 250;
+    const target = getBuilderDropTarget(ev.clientX, ev.clientY);
+    if(target.kind === "deck-card"){
+      let insertIndex = ev.clientX < target.element.getBoundingClientRect().left + target.element.getBoundingClientRect().width / 2
+        ? target.index
+        : target.index + 1;
+      if(session.meta.type === "library"){
+        insertIntoDeck(session.meta.id, insertIndex);
+      } else if(session.meta.type === "deck"){
+        const currentIndex = state.deck.indexOf(session.meta.id);
+        if(currentIndex !== -1 && currentIndex < insertIndex) insertIndex -= 1;
+        moveDeckCard(session.meta.id, insertIndex);
+      }
+    } else if(target.kind === "deck-zone"){
+      if(session.meta.type === "library") insertIntoDeck(session.meta.id, state.deck.length);
+      if(session.meta.type === "deck") moveDeckCard(session.meta.id, state.deck.length);
+    } else if(target.kind === "library" && session.meta.type === "deck"){
+      removeFromDeck(session.meta.id);
+    }
+  }
+  if(session.ghost) session.ghost.remove();
+  state.dragSession = null;
+  clearBuilderDragState();
+}
+function handleBuilderPointerMove(ev){
+  const session = state.dragSession;
+  if(!session || ev.pointerId !== session.pointerId) return;
+  const dx = ev.clientX - session.startX;
+  const dy = ev.clientY - session.startY;
+  if(!session.didDrag && Math.hypot(dx, dy) < 8) return;
+  if(!session.didDrag){
+    session.didDrag = true;
+    session.sourceEl.classList.add("dragging");
+    session.ghost = makeDragGhost(session.sourceEl, ev.clientX, ev.clientY);
+  }
+  positionDragGhost(session.ghost, ev.clientX, ev.clientY);
+  const target = getBuilderDropTarget(ev.clientX, ev.clientY);
+  highlightBuilderDropTarget(target, session.sourceEl);
+}
+function beginBuilderPointerDrag(ev, meta, sourceEl){
+  if(ev.button !== undefined && ev.button !== 0) return;
+  if(ev.target.closest(".card-info-toggle,.card-remove-toggle")) return;
+  state.dragSession = {
+    pointerId: ev.pointerId,
+    meta,
+    sourceEl,
+    startX: ev.clientX,
+    startY: ev.clientY,
+    offsetX: ev.clientX - sourceEl.getBoundingClientRect().left,
+    offsetY: ev.clientY - sourceEl.getBoundingClientRect().top,
+    didDrag: false,
+    ghost: null
+  };
+  if(sourceEl.setPointerCapture){
+    try{ sourceEl.setPointerCapture(ev.pointerId); }catch(err){}
+  }
+  window.addEventListener("pointermove", handleBuilderPointerMove);
+  window.addEventListener("pointerup", finishBuilderPointerDrag);
+  window.addEventListener("pointercancel", finishBuilderPointerDrag);
+}
+function formatList(list){
+  if(!list.length) return "";
+  if(list.length === 1) return list[0];
+  if(list.length === 2) return `${list[0]} and ${list[1]}`;
+  return `${list.slice(0, -1).join(", ")}, and ${list[list.length - 1]}`;
+}
+function hasKeyword(title, keywords){
+  const lower = title.toLowerCase();
+  return keywords.some(word => lower.includes(word));
+}
+function describeExerciseShape(ex){
+  const title = ex.title.toLowerCase();
+  if(ex.category === "push"){
+    if(hasKeyword(title, ["scap", "scapular"])) return "This is a small plank-based shoulder-blade drill where the arms stay straight while the chest subtly sinks and presses away.";
+    if(hasKeyword(title, ["pike"])) return "This is an upside-down push-up variation with hips high, so the body forms an inverted V and the head lowers toward the floor.";
+    if(hasKeyword(title, ["down dog"])) return "This starts from a downward-dog-like shape, with hips high and the upper body doing most of the pressing.";
+    if(hasKeyword(title, ["hindu"])) return "This is a flowing push-up where the body dives forward from hips-high into a lifted chest position.";
+    if(hasKeyword(title, ["shoulder tap"])) return "This is a plank hold with alternating hand taps to the opposite shoulder.";
+    if(hasKeyword(title, ["wall"])) return "This is a standing incline push-up done against a wall.";
+    return "This is a push-up pattern where you lower the body with the hands on the floor and press back up.";
+  }
+  if(ex.category === "legs"){
+    if(hasKeyword(title, ["wall sit"])) return "This is a static squat hold with your back supported on a wall and knees bent.";
+    if(hasKeyword(title, ["squat"])) return "This is a squat pattern where you bend the knees and hips to sit down and then stand back up.";
+    if(hasKeyword(title, ["lunge", "split squat", "curtsy"])) return "This is a staggered-stance leg exercise where one leg works in front and one behind as you lower and rise.";
+    if(hasKeyword(title, ["bridge"])) return "This is a floor-based hip lift done on your back with knees bent and feet planted.";
+    if(hasKeyword(title, ["calf"])) return "This is a standing ankle raise where you lift the heels and balance on the balls of the feet.";
+    if(hasKeyword(title, ["hinge", "good morning"])) return "This is a hip-hinge move where the hips fold back while the spine stays long.";
+    if(hasKeyword(title, ["airplane"])) return "This is a single-leg hinge variation where the body tips forward while you balance and control the hips.";
+    return "This is a lower-body move built around squatting, hinging, stepping, or balancing through the legs.";
+  }
+  if(ex.category === "core"){
+    if(hasKeyword(title, ["plank"])) return "This is a straight-body hold supported by the hands or forearms, with the trunk resisting sagging or twisting.";
+    if(hasKeyword(title, ["bear crawl"])) return "This is a hovering tabletop hold with knees off the floor and the trunk braced.";
+    if(hasKeyword(title, ["dead bug"])) return "This is a back-on-floor core drill where opposite arm and leg reach away while the trunk stays still.";
+    if(hasKeyword(title, ["bird dog"])) return "This is an all-fours balance drill where opposite arm and leg extend long from the body.";
+    if(hasKeyword(title, ["mountain climber"])) return "This is a fast plank variation where the knees drive toward the chest one at a time.";
+    if(hasKeyword(title, ["hollow"])) return "This is a curved-body hold on your back with shoulders and legs lifted off the floor.";
+    if(hasKeyword(title, ["v-up"])) return "This is an abdominal fold where the upper body and legs lift toward each other.";
+    if(hasKeyword(title, ["flutter"])) return "This is a floor core drill with straight or nearly straight legs making small alternating kicks.";
+    if(hasKeyword(title, ["reverse crunch"])) return "This is an ab move where the knees or pelvis curl upward toward the torso from the floor.";
+    if(hasKeyword(title, ["toe touch"])) return "This is a crunch variation where the hands reach toward raised feet.";
+    if(hasKeyword(title, ["bicycle"])) return "This is a twisting crunch where elbow and opposite knee move toward each other in alternation.";
+    return "This is a trunk-control exercise where the middle of the body has to brace, curl, or resist movement.";
+  }
+  if(ex.category === "mobility"){
+    if(hasKeyword(title, ["cat-cow"])) return "This is a hands-and-knees spinal mobility drill where the back rounds and arches in sequence.";
+    if(hasKeyword(title, ["open book", "rotation", "thread the needle"])) return "This is a rotation drill where the chest and upper back turn while the rest of the body stays relatively stable.";
+    if(hasKeyword(title, ["90/90"])) return "This is a seated hip mobility drill with both knees bent on the floor in front and to the side.";
+    if(hasKeyword(title, ["ankle"])) return "This is an ankle mobility drill where the knee shifts over the foot to open the joint.";
+    if(hasKeyword(title, ["downward dog"])) return "This is an inverted stretch shape with hands and feet on the floor and hips lifted high.";
+    if(hasKeyword(title, ["lunge", "reach"])) return "This is a long split-stance stretch that opens the front of the hip while the torso reaches.";
+    return "This is a controlled range-of-motion drill meant to open a joint rather than fatigue a muscle.";
+  }
+  if(ex.category === "posture"){
+    if(hasKeyword(title, ["angel", "snow angel"])) return "This is an arm sweep pattern meant to train the shoulders and upper back to move cleanly overhead and back down.";
+    if(hasKeyword(title, ["swimmer"])) return "This is a face-down upper-back drill where the arms move through a swimming-like path.";
+    if(hasKeyword(title, ["raise"])) return "This is a light upper-back lift where the arms rise into a Y or T shape while the torso stays controlled.";
+    if(hasKeyword(title, ["chin tuck"])) return "This is a small neck-position drill where the head slides straight back without tipping.";
+    if(hasKeyword(title, ["cobra"])) return "This is a gentle prone back extension where the chest lifts off the floor.";
+    if(hasKeyword(title, ["retraction"])) return "This is a shoulder-blade squeeze drill that trains the upper back to pull the shoulders back.";
+    if(hasKeyword(title, ["scap push"])) return "This is a posture-focused plank drill where the shoulder blades glide without big elbow movement.";
+    return "This is an upper-back and alignment drill meant to train cleaner posture and shoulder positioning.";
+  }
+  if(ex.category === "cardio"){
+    if(hasKeyword(title, ["jack"])) return "This is a quick repeated jumping or stepping pattern where the feet move apart and together.";
+    if(hasKeyword(title, ["high knees"])) return "This is running in place with the knees lifting higher than a normal jog.";
+    if(hasKeyword(title, ["butt kicks"])) return "This is a running-in-place drill where the heels cycle up toward the glutes.";
+    if(hasKeyword(title, ["march"])) return "This is a lighter cardio drill where the legs drive rhythmically without full running impact.";
+    if(hasKeyword(title, ["boxing"])) return "This is a light bouncing footwork pattern paired with quick boxing-style arm action.";
+    if(hasKeyword(title, ["shuffle", "skater", "carioca"])) return "This is a lateral cardio pattern where the body moves side to side instead of just straight up and down.";
+    if(hasKeyword(title, ["burpee", "squat thrust"])) return "This is a full-body cardio move that drops to the floor and returns to standing in one flowing rep.";
+    if(hasKeyword(title, ["pogo"])) return "This is a quick springy bounce done mostly from the ankles.";
+    return "This is a faster-paced conditioning move meant to raise the heart rate through repeated rhythmic motion.";
+  }
+  if(hasKeyword(title, ["toe yoga"])) return "This is a foot-control drill where the toes lift or press in different combinations while you stay mostly in place.";
+  if(hasKeyword(title, ["walk"])) return "This is a slow balance walk where each step is placed carefully to challenge control.";
+  if(hasKeyword(title, ["reach", "tap", "hinge", "airplane"])) return "This is a balance drill where one leg stabilizes while the other leg or the hands reach away from the body.";
+  return "This is a balance exercise where one leg or a narrow base of support forces you to stay steady without rushing.";
+}
+function buildPushInfo(ex){
+  const title = ex.title.toLowerCase();
+  if(hasKeyword(title, ["scap", "scapular"])){
+    return {
+      howTo: "Start in a straight-arm plank with elbows locked. Without bending the arms, let the chest sink slightly as the shoulder blades come together, then press the floor away to spread them apart again.",
+      tip: "Keep the neck long and ribs tucked so the motion stays in the shoulder blades rather than the low back.",
+      couplet: "Let the shoulder blades slide, then press them wide.\nSmall moves done clean are a stronger guide."
+    };
+  }
+  if(hasKeyword(title, ["pike", "down dog", "hindu"])){
+    return {
+      howTo: "Begin with hips high and hands planted firmly. Bend the elbows to bring the head and chest through the line of the hands, then press back up with control, keeping the shoulders active the whole time.",
+      tip: "Think of lowering the crown of the head between the hands, not collapsing the chest toward the floor.",
+      couplet: "Hips high, head through, keep the line true.\nPress the ground away and rise on cue."
+    };
+  }
+  if(hasKeyword(title, ["shoulder tap"])){
+    return {
+      howTo: "Set up in a strong plank or push-up position. Shift just enough weight to one side to tap the opposite shoulder, then alternate without letting the hips rock side to side.",
+      tip: "Widen the feet if needed so the body stays square while you tap.",
+      couplet: "Tap with control and keep the hips still.\nQuiet in the middle shows real skill."
+    };
+  }
+  if(hasKeyword(title, ["wall"])){
+    return {
+      howTo: "Place the hands on a wall at chest height and walk the feet back until the body makes a straight line. Lower the chest toward the wall by bending the elbows, then press back to the start.",
+      tip: "Keep the body in one piece from head to heel instead of sagging at the hips.",
+      couplet: "Wall in front and body tall.\nPress with purpose, steady through it all."
+    };
+  }
+  return {
+    howTo: "Set up in a solid plank with hands just outside shoulder width. Lower the chest under control, keeping the body straight, then press back up until the elbows extend and the top position feels stacked.",
+    tip: "Brace the abs and squeeze the glutes so the body rises as one unit instead of peeling up in pieces.",
+    couplet: "Chest stays proud and elbows track right.\nLower with care, then press with might."
+  };
+}
+function buildLegsInfo(ex){
+  const title = ex.title.toLowerCase();
+  if(hasKeyword(title, ["squat", "wall sit"])){
+    return {
+      howTo: "Stand with feet about hip to shoulder width apart and sit the hips back as the knees bend. Keep the chest up, push through the whole foot, and stand tall again with control.",
+      tip: "Let the knees travel naturally, but keep them pointing in the same direction as the toes.",
+      couplet: "Sit back low and drive to stand.\nStrong through the feet, steady through the land."
+    };
+  }
+  if(hasKeyword(title, ["lunge", "split squat", "curtsy"])){
+    return {
+      howTo: "Take a long enough stance that both knees can bend comfortably. Lower straight down with the torso tall, then drive through the front foot to return without wobbling.",
+      tip: "Think elevator, not escalator. Go down and up rather than drifting far forward.",
+      couplet: "Drop with control, then rise with ease.\nFront foot rooted, hips and knees."
+    };
+  }
+  if(hasKeyword(title, ["bridge"])){
+    return {
+      howTo: "Lie on your back with feet planted and knees bent. Brace the middle, drive through the heels, and lift the hips until the body forms a long line from shoulders to knees.",
+      tip: "Exhale at the top and avoid arching the low back to steal the work from the glutes.",
+      couplet: "Heels dig in and hips climb high.\nGlutes do the work, not the low back's try."
+    };
+  }
+  if(hasKeyword(title, ["calf"])){
+    return {
+      howTo: "Stand tall and press through the balls of the feet to rise onto the toes. Pause briefly at the top, then lower all the way down under control.",
+      tip: "Move straight up and down rather than rolling to the outer edges of the feet.",
+      couplet: "Rise on the toes, then lower slow.\nSmall range, sharp work, and the calves will know."
+    };
+  }
+  if(hasKeyword(title, ["hinge", "good morning", "airplane"])){
+    return {
+      howTo: "Soften the knees and push the hips straight back while the spine stays long. Stop when you feel the hamstrings load, then drive the hips forward to return to standing.",
+      tip: "Imagine closing a car door with your hips so the hinge stays in the hips rather than the knees.",
+      couplet: "Hips drift back and spine stays long.\nSnap to tall and finish strong."
+    };
+  }
+  return {
+    howTo: "Move with the feet grounded and let the hips do most of the work. Keep the torso organized, control the lowering phase, and finish each rep by returning to a tall balanced stance.",
+    tip: "Use full-foot pressure so the knees, hips, and ankles share the load cleanly.",
+    couplet: "Ground the feet and move with grace.\nStrong legs built at a measured pace."
+  };
+}
+function buildCoreInfo(ex){
+  const title = ex.title.toLowerCase();
+  if(hasKeyword(title, ["plank", "bear crawl"])){
+    return {
+      howTo: "Set the shoulders strong and lock in a long line from head to heel or knee. Brace the abs, breathe behind the brace, and hold or move without letting the hips sag.",
+      tip: "Pull the ribs down gently so the low back stays quiet while the front of the trunk does the work.",
+      couplet: "Ribs knit down and body stays long.\nHold the line and the middle grows strong."
+    };
+  }
+  if(hasKeyword(title, ["dead bug", "bird dog"])){
+    return {
+      howTo: "Start with the spine neutral and the abs gently braced. Reach the opposite arm and leg away slowly, then return without letting the ribs flare or the lower back shift.",
+      tip: "Only move as far as you can while keeping the trunk quiet and level.",
+      couplet: "Reach out long, then draw it back.\nCalm in the center keeps you on track."
+    };
+  }
+  if(hasKeyword(title, ["mountain climber"])){
+    return {
+      howTo: "Hold a strong plank and drive one knee toward the chest, then switch legs smoothly. Keep pressing the floor away as the feet trade places.",
+      tip: "Go only as fast as you can keep the shoulders stacked and the hips from bouncing.",
+      couplet: "Knees move quick but the trunk stays tight.\nFast feet below, calm frame in sight."
+    };
+  }
+  if(hasKeyword(title, ["hollow", "v-up", "flutter", "reverse crunch", "toe touch", "bicycle"])){
+    return {
+      howTo: "Begin with the low back gently connected to the floor. Lift the legs and upper body as the variation asks, then lower with control without losing tension through the middle.",
+      tip: "If the back pops up, shorten the range so you keep real abdominal work instead of chasing height.",
+      couplet: "Ribs stay down and legs move light.\nControl the arc and keep it tight."
+    };
+  }
+  return {
+    howTo: "Set your trunk first, then let the limbs move around a stable center. Breathe steadily, keep the ribs controlled, and make each rep look deliberate rather than rushed.",
+    tip: "The best core reps look almost quiet even when they feel demanding.",
+    couplet: "Center held firm while the limbs all roam.\nKeep the middle braced and the body finds home."
+  };
+}
+function buildMobilityInfo(ex){
+  const title = ex.title.toLowerCase();
+  if(hasKeyword(title, ["rotation", "open book", "thread the needle", "cat-cow"])){
+    return {
+      howTo: "Move slowly through the available range and let the breath help the motion. Rotate or flex and extend segment by segment instead of forcing the end position.",
+      tip: "Exhale as you rotate or round to help the ribs soften and the movement open up.",
+      couplet: "Breathe and turn, do not yank or shove.\nEasy range grows when the joints can move."
+    };
+  }
+  if(hasKeyword(title, ["90/90", "hip", "adductor", "lunge", "ankle"])){
+    return {
+      howTo: "Set up in the shape, then shift slowly until you feel a clean stretch or opening through the hips, groin, or ankle. Pause, breathe, and move back out without bouncing.",
+      tip: "Look for a smooth stretch sensation, not a pinchy joint feeling.",
+      couplet: "Ease in slow and breathe right through.\nRange comes better when the move is true."
+    };
+  }
+  if(hasKeyword(title, ["downward dog", "hamstring", "sweep", "reach"])){
+    return {
+      howTo: "Lengthen through the spine first, then reach the hips back to load the back of the body. Keep the knees as soft as needed so the stretch lands where you want it.",
+      tip: "Chase long lines, not locked joints. A small knee bend often makes the position better.",
+      couplet: "Reach back long and let tension go.\nSmooth lines first, then range will grow."
+    };
+  }
+  return {
+    howTo: "Move slowly through the pattern and spend a breath or two in the open position. Stay active rather than collapsing so the joints learn the shape with control.",
+    tip: "Gentle pressure plus steady breathing usually opens range better than forcing depth.",
+    couplet: "Slow and easy wins the day.\nOpen the range, do not wrench away."
+  };
+}
+function buildPostureInfo(ex){
+  const title = ex.title.toLowerCase();
+  if(hasKeyword(title, ["angel", "snow angel", "swimmer", "raise"])){
+    return {
+      howTo: "Lift or sweep the arms with the neck relaxed and the upper back active. Think of reaching long through the fingertips while the shoulder blades glide down and back.",
+      tip: "Make the motion smooth and honest. Do not crank the chin up just to get the arms higher.",
+      couplet: "Arms reach long and shoulders stay low.\nUpper back leads and the posture will show."
+    };
+  }
+  if(hasKeyword(title, ["chin tuck"])){
+    return {
+      howTo: "Stand or lie tall and gently draw the head straight back as if making a double chin. Hold for a beat, then release without tipping the head up or down.",
+      tip: "Think back, not down. The neck should lengthen rather than jam.",
+      couplet: "Head glides back and neck stays tall.\nSmall clean reps can fix a lot after all."
+    };
+  }
+  if(hasKeyword(title, ["cobra", "retraction", "scap push"])){
+    return {
+      howTo: "Set the ribs and lengthen the spine, then use the upper back and shoulder blades to create the movement. Keep the effort centered between the shoulders instead of dumping into the low back.",
+      tip: "Lead with the sternum gently, but stop before the lower back takes over.",
+      couplet: "Chest lifts light and shoulders align.\nBack does the work and the posture looks fine."
+    };
+  }
+  return {
+    howTo: "Move with the ribcage stacked and the head long over the torso. Focus on clean shoulder-blade motion and light tension through the upper back.",
+    tip: "Good posture drills should feel organized, not strained.",
+    couplet: "Stack it tall and move with care.\nQuiet back work builds a steadier air."
+  };
+}
+function buildCardioInfo(ex){
+  const title = ex.title.toLowerCase();
+  if(hasKeyword(title, ["jack", "seal jack"])){
+    return {
+      howTo: "Stay springy through the feet as the legs move out and in. Coordinate the arms with the step or hop pattern and keep the landings soft.",
+      tip: "Think quiet feet and quick rhythm rather than stomping for intensity.",
+      couplet: "Quick out, quick in, stay light below.\nSoft landings keep the rhythm flow."
+    };
+  }
+  if(hasKeyword(title, ["high knees", "butt kicks", "march", "skip", "pogo"])){
+    return {
+      howTo: "Run or bounce in place with a tall torso and active arms. Lift or cycle the legs cleanly while staying light on the feet and breathing steadily.",
+      tip: "Keep the steps underneath you so the drill stays fast and springy instead of heavy.",
+      couplet: "Tall through the trunk and quick through the feet.\nLight on the floor keeps the pace neat."
+    };
+  }
+  if(hasKeyword(title, ["boxing", "shuffle", "skater", "carioca", "fast feet"])){
+    return {
+      howTo: "Stay in an athletic stance with knees soft and the chest up. Move quickly side to side or in place while keeping the steps organized and the arms helping the rhythm.",
+      tip: "Short, crisp steps are usually better than giant reaches that break your posture.",
+      couplet: "Quick little steps and eyes ahead.\nMove with snap, not frantic tread."
+    };
+  }
+  if(hasKeyword(title, ["burpee", "squat thrust"])){
+    return {
+      howTo: "Drop to the floor with control, jump or step the feet back, then return to standing smoothly. Keep the sequence tight so each rep flows without extra stalling.",
+      tip: "Use a pace you can repeat cleanly rather than sprinting the first few reps and fading hard.",
+      couplet: "Down to the floor, then up you fly.\nSmooth beats sloppy when the heart runs high."
+    };
+  }
+  return {
+    howTo: "Stay tall, breathe rhythmically, and keep the movement elastic through the feet and ankles. Let speed come from crisp mechanics instead of wild effort.",
+    tip: "The best cardio drills look repeatable. Save a little room so the pace can last.",
+    couplet: "Find the rhythm, hold the beat.\nFast but tidy wins on your feet."
+  };
+}
+function buildBalanceInfo(ex){
+  const title = ex.title.toLowerCase();
+  if(hasKeyword(title, ["walk", "toe yoga"])){
+    return {
+      howTo: "Move slowly and deliberately, placing each foot with care before the weight fully transfers. Keep the torso tall and let the small stabilizers in the feet and hips do the work.",
+      tip: "Fix the eyes on a steady point and let the breath stay easy.",
+      couplet: "Eyes stay still and feet move small.\nQuiet control will steady all."
+    };
+  }
+  if(hasKeyword(title, ["tree", "stand", "stork", "eyes-closed", "hold"])){
+    return {
+      howTo: "Stand tall on one leg and lightly brace the trunk. Let the standing foot grip the floor while the hip stays active and the free leg settles into the chosen shape.",
+      tip: "A soft bend in the standing knee usually makes balance easier than locking the joint.",
+      couplet: "Root through the foot and stand up high.\nStillness grows when you do not fight the sky."
+    };
+  }
+  if(hasKeyword(title, ["reach", "hinge", "airplane", "tap"])){
+    return {
+      howTo: "Balance on the standing leg as the free leg or hands reach into space. Move slowly, keep the hips level when possible, and return to center before the wobble turns into a scramble.",
+      tip: "Reach only as far as you can while the standing foot stays anchored.",
+      couplet: "Reach away, then pull back in.\nOwn the edge and steadiness wins."
+    };
+  }
+  return {
+    howTo: "Set tall posture first, then challenge balance without rushing. Let the standing foot, ankle, and hip make the fine corrections while the torso stays calm.",
+    tip: "Looking at one fixed point can clean up a lot of wobble right away.",
+    couplet: "Stand with patience, small and strong.\nBalance gets better when you linger long."
+  };
+}
+function getExerciseInfo(ex){
+  const primary = formatList(ex.primary);
+  const secondary = formatList(ex.secondary);
+  const description = describeExerciseShape(ex);
+  const familyInfo = ex.category === "push" ? buildPushInfo(ex)
+    : ex.category === "legs" ? buildLegsInfo(ex)
+    : ex.category === "core" ? buildCoreInfo(ex)
+    : ex.category === "mobility" ? buildMobilityInfo(ex)
+    : ex.category === "posture" ? buildPostureInfo(ex)
+    : ex.category === "cardio" ? buildCardioInfo(ex)
+    : buildBalanceInfo(ex);
+  return {
+    howTo: `${description} ${familyInfo.howTo} This one mainly hits ${primary}${secondary ? `, with ${secondary} helping out.` : "."}`,
+    tip: familyInfo.tip,
+    couplet: familyInfo.couplet
+  };
+}
+function bindPseudoButton(el, handler){
+  el.addEventListener("click", handler);
+  el.addEventListener("keydown", ev => {
+    if(ev.key !== "Enter" && ev.key !== " ") return;
+    handler(ev);
+  });
+}
+function closeInfoPopup(){
+  state.infoAnchor = null;
+  els.infoPopup.classList.add("hidden");
+  els.infoPopup.setAttribute("aria-hidden", "true");
+}
+function positionInfoPopup(anchorEl){
+  if(!anchorEl || els.infoPopup.classList.contains("hidden")) return;
+  const rect = anchorEl.getBoundingClientRect();
+  const popupRect = els.infoPopup.getBoundingClientRect();
+  const margin = 12;
+  let left = rect.right + 10;
+  let top = rect.top - 4;
+  if(left + popupRect.width > window.innerWidth - margin){
+    left = rect.left - popupRect.width - 10;
+  }
+  if(left < margin){
+    left = Math.max(margin, Math.min(window.innerWidth - popupRect.width - margin, rect.left + (rect.width / 2) - (popupRect.width / 2)));
+  }
+  if(top + popupRect.height > window.innerHeight - margin){
+    top = window.innerHeight - popupRect.height - margin;
+  }
+  if(top < margin){
+    top = margin;
+  }
+  els.infoPopup.style.left = `${left}px`;
+  els.infoPopup.style.top = `${top}px`;
+}
+function openInfoPopup(ex, anchorEl){
+  const info = getExerciseInfo(ex);
+  state.infoAnchor = anchorEl;
+  els.infoPopupTitle.textContent = `${ex.title} note`;
+  els.infoPopupHowTo.textContent = info.howTo;
+  els.infoPopupTip.textContent = info.tip;
+  els.infoPopupCouplet.innerHTML = info.couplet.replace("\n","<br>");
+  els.infoPopup.classList.remove("hidden");
+  els.infoPopup.setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => positionInfoPopup(anchorEl));
+}
+function createCard(ex, {large=false, stampText="", footerHint="", removable=false, onRemove=null, addable=false, onAdd=null, showInfo=true} = {}){
+  const card = document.createElement("div");
+  card.className = `card${large ? " large" : ""}`;
+  card.dataset.category = ex.category;
+  card.innerHTML = `
+    ${removable ? '<div class="card-remove-toggle" role="button" tabindex="0" aria-label="Remove from hand">X</div>' : ""}
+    ${addable ? '<div class="card-add-toggle" role="button" tabindex="0" aria-label="Add to hand">↑</div>' : ""}
+    ${showInfo ? '<div class="card-info-toggle" role="button" tabindex="0" aria-label="Show exercise note">?</div>' : ""}
+    <div class="topband">
+      <span class="topband-label">${CATEGORY_META[ex.category].label}</span>
+    </div>
+    <div class="body">
+      <div class="name">${ex.title}</div>
+      <div class="muscle-groups">
+        <div class="primary-muscles">${ex.primary.join(", ")}</div>
+        <div class="secondary-muscles">${ex.secondary.join(", ")}</div>
+      </div>
+      <div class="footer-note">
+        <div class="tiny">${footerHint || ex.category}</div>
+      </div>
+    </div>
+  `;
+  const removeToggle = card.querySelector(".card-remove-toggle");
+  const addToggle = card.querySelector(".card-add-toggle");
+  const toggle = card.querySelector(".card-info-toggle");
+  function openPanel(ev){
+    ev.preventDefault();
+    ev.stopPropagation();
+    if(!toggle) return;
+    if(state.infoAnchor === toggle && !els.infoPopup.classList.contains("hidden")){
+      closeInfoPopup();
+      return;
+    }
+    openInfoPopup(ex, toggle);
+  }
+  if(removeToggle && onRemove){
+    bindPseudoButton(removeToggle, ev => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      onRemove();
+    });
+    removeToggle.addEventListener("pointerdown", ev => ev.stopPropagation());
+  }
+  if(addToggle && onAdd){
+    bindPseudoButton(addToggle, ev => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      onAdd();
+    });
+    addToggle.addEventListener("pointerdown", ev => ev.stopPropagation());
+  }
+  if(toggle){
+    bindPseudoButton(toggle, openPanel);
+    toggle.addEventListener("pointerdown", ev => ev.stopPropagation());
+  }
+  return card;
+}
+function renderFilters(){
+  els.filterStrip.innerHTML = "";
+  CATEGORY_ORDER.forEach(key => {
+    const btn = document.createElement("button");
+    btn.className = `filter-chip${state.category === key ? " active" : ""}`;
+    btn.textContent = CATEGORY_META[key].label;
+    btn.addEventListener("click", () => {
+      state.category = key;
+      pickVisibleBatch();
+      renderFilters();
+    });
+    els.filterStrip.appendChild(btn);
+  });
+}
+function renderLibrary(){
+  const filtered = getFilteredExercises();
+  const available = filtered.filter(ex => !state.deck.includes(ex.id));
+  const visible = state.visibleIds
+    .map(byId)
+    .filter(Boolean)
+    .filter(ex => available.some(f => f.id === ex.id));
+  if(visible.length === 0 && available.length){
+    state.visibleIds = sampleIds(available, 10);
+  }
+  const finalVisible = state.visibleIds.map(byId).filter(Boolean).filter(ex => available.some(f => f.id === ex.id));
+  if(state.focusedLibraryId && !finalVisible.some(ex => ex.id === state.focusedLibraryId)){
+    state.focusedLibraryId = null;
+  }
+  els.libraryMeta.textContent = `${finalVisible.length} visible · ${available.length} available · ${filtered.length} matching · ${EXERCISES.length} total`;
+  els.libraryGrid.innerHTML = "";
+  if(finalVisible.length === 0){
+    const empty = document.createElement("div");
+    empty.className = "note-box";
+    empty.style.gridColumn = "1 / -1";
+    empty.innerHTML = available.length === 0 && filtered.length
+      ? "<strong>Everything matching is already in hand.</strong><br>Remove a card from the hand or broaden the search."
+      : "<strong>No matches.</strong><br>Try a broader term or clear the search.";
+    els.libraryGrid.appendChild(empty);
+    return;
+  }
+  finalVisible.forEach(ex => {
+    const wrap = document.createElement("div");
+    wrap.className = "card-wrap";
+    const btn = document.createElement("div");
+    const isFocused = state.focusedLibraryId === ex.id;
+    btn.className = `card-button${isFocused ? " is-focused" : ""}`;
+    btn.setAttribute("role", "button");
+    btn.tabIndex = 0;
+    btn.title = isFocused ? "Library card focused" : "Focus card";
+    btn.appendChild(createCard(ex, {
+      stampText:"Add",
+      footerHint: ex.primary[0] || ex.category,
+      addable:isFocused,
+      onAdd:() => addToDeck(ex.id),
+      showInfo:isFocused
+    }));
+    btn.addEventListener("click", ev => {
+      if(shouldSuppressClick()) return;
+      if(ev.target.closest(".card-info-toggle,.card-add-toggle")) return;
+      focusLibraryCard(ex.id);
+    });
+    btn.addEventListener("keydown", ev => {
+      if(ev.target.closest(".card-info-toggle,.card-add-toggle")) return;
+      if(ev.key !== "Enter" && ev.key !== " ") return;
+      ev.preventDefault();
+      focusLibraryCard(ex.id);
+    });
+    btn.addEventListener("pointerdown", ev => beginBuilderPointerDrag(ev, {type:"library", id:ex.id}, btn));
+    wrap.appendChild(btn);
+    els.libraryGrid.appendChild(wrap);
+  });
+}
+function renderDeck(){
+  if(state.focusedDeckId && !state.deck.includes(state.focusedDeckId)){
+    state.focusedDeckId = null;
+  }
+  els.deckMetaChip.textContent = String(state.deck.length);
+  els.handCountBubble.classList.remove("hidden");
+  els.handCountBubble.style.setProperty("--fill", String(Math.max(0, Math.min(1, state.deck.length / MAX_DECK))));
+  els.startWorkoutBtn.disabled = state.deck.length === 0;
+  els.clearDeckBtn.classList.toggle("hidden", state.deck.length === 0);
+  renderHandBalance();
+  els.deckSurface.innerHTML = "";
+  if(!state.deck.length){
+    const empty = document.createElement("div");
+    empty.className = "deck-empty";
+    empty.innerHTML = `<div class="deck-empty-copy">Drag cards from library</div>`;
+    els.deckSurface.appendChild(empty);
+    return;
+  }
+  const W = els.deckSurface.clientWidth || 640;
+  const H = els.deckSurface.clientHeight || 234;
+  const cardWidth = window.innerWidth < 640 ? 138 : 150;
+  const cardHeight = window.innerWidth < 640 ? 200 : 212;
+  const count = state.deck.length;
+  const pad = 12;
+  const previewScale = window.innerWidth < 640 ? 0.9 : 0.96;
+  const previewWidth = Math.round(cardWidth * previewScale);
+  const previewHeight = Math.round(cardHeight * previewScale);
+  const available = Math.max(40, W - previewWidth - pad * 2);
+  const roomyMaxGap = window.innerWidth < 640 ? 92 : 108;
+  const comfyGap = window.innerWidth < 640 ? 48 : 56;
+  const fitGap = count <= 1 ? 0 : available / Math.max(1, count - 1);
+  const xGap = count <= 1 ? 0 : Math.min(roomyMaxGap, Math.max(10, fitGap > comfyGap ? comfyGap : fitGap));
+  const rowWidth = previewWidth + xGap * Math.max(0, count - 1);
+  const rowStart = count <= 1 ? Math.max(pad, Math.floor((W - previewWidth) / 2)) : Math.max(pad, Math.floor((W - rowWidth) / 2));
+  const baseTop = Math.max(0, H - previewHeight + 20);
+  state.deck.forEach((id, i) => {
+    const ex = byId(id);
+    const isFocused = state.focusedDeckId === id;
+    const isBalanceHit = !!state.highlightedMuscle && getBalanceGroupsForExercise(ex).has(state.highlightedMuscle);
+    const tilt = ((i % 5) - 2) * 0.65;
+    const wobbleY = i % 3 === 1 ? 2 : 0;
+    const holder = document.createElement("div");
+    holder.className = `deck-card${isFocused ? " is-focused" : ""}${isBalanceHit ? " balance-hit" : ""}`;
+    holder.setAttribute("role", "button");
+    holder.tabIndex = 0;
+    holder.dataset.deckIndex = String(i);
+    holder.dataset.cardId = id;
+    holder.title = "Remove from hand";
+    holder.style.left = `${rowStart + i * xGap}px`;
+    holder.style.top = `${baseTop + wobbleY - (isFocused ? 18 : 0)}px`;
+    holder.style.transform = `rotate(${tilt}deg) scale(${previewScale})`;
+    holder.style.zIndex = String(isFocused ? 1000 : i + 1);
+    holder.appendChild(createCard(ex, {
+      stampText:"In hand",
+      footerHint:ex.primary[0] || ex.category,
+      removable:true,
+      onRemove:() => removeFromDeck(id)
+    }));
+    holder.addEventListener("click", ev => {
+      if(shouldSuppressClick()) return;
+      if(ev.target.closest(".card-info-toggle,.card-remove-toggle")) return;
+      focusDeckCard(id);
+    });
+    holder.addEventListener("keydown", ev => {
+      if(ev.target.closest(".card-info-toggle,.card-remove-toggle")) return;
+      if(ev.key !== "Enter" && ev.key !== " ") return;
+      ev.preventDefault();
+      focusDeckCard(id);
+    });
+    holder.addEventListener("pointerdown", ev => beginBuilderPointerDrag(ev, {type:"deck", id, index:i}, holder));
+    els.deckSurface.appendChild(holder);
+  });
+}
+function renderHandBalance(){
+  const scores = getBalanceGroupScores(state.deck);
+  const coveredCount = BALANCE_GROUPS.filter(label => (scores[label] || 0) > 0).length;
+  if(state.highlightedMuscle && !BALANCE_GROUPS.includes(state.highlightedMuscle)){
+    state.highlightedMuscle = null;
+  }
+  els.handBalanceMeta.textContent = `${coveredCount} / ${BALANCE_GROUPS.length} covered`;
+  els.handBalanceList.innerHTML = "";
+  if(!BALANCE_GROUPS.length){
+    els.handBalanceList.innerHTML = `<div class="balance-empty"><strong>No coverage yet.</strong><br>Add cards to see which muscles this hand leans toward.</div>`;
+    return;
+  }
+  const max = Math.max(1, ...BALANCE_GROUPS.map(label => scores[label] || 0));
+  BALANCE_GROUPS.forEach(label => {
+    const value = scores[label] || 0;
+    const row = document.createElement("div");
+    row.className = `balance-mini-row${state.highlightedMuscle === label ? " balance-active" : ""}`;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "balance-mini-btn";
+    btn.setAttribute("aria-pressed", state.highlightedMuscle === label ? "true" : "false");
+    const displayLabel = CATEGORY_META[label].label;
+    btn.title = state.highlightedMuscle === label ? `Clear ${displayLabel} highlight` : `Highlight ${displayLabel} cards`;
+    btn.innerHTML = `
+      <div class="balance-mini-head">
+        <span>${displayLabel}</span>
+        <span class="mono">${value % 1 === 0 ? value : value.toFixed(1)}</span>
+      </div>
+      <div class="balance-mini-track">
+        <div class="balance-mini-fill" style="width:${value > 0 ? Math.max(8, Math.round((value / max) * 100)) : 0}%"></div>
+      </div>
+    `;
+    btn.addEventListener("click", () => toggleHighlightedMuscle(label));
+    row.appendChild(btn);
+    els.handBalanceList.appendChild(row);
+  });
+}
+function drawRandomDeck(count = 7){
+  state.deck = sampleIds(EXERCISES, Math.max(1, Math.min(MAX_DECK, count)));
+  renderDeck();
+  renderLibrary();
+}
+function drawOneCard(){
+  if(state.deck.length >= MAX_DECK) return;
+  const available = EXERCISES.filter(ex => !state.deck.includes(ex.id));
+  if(!available.length) return;
+  const [picked] = sampleIds(available, 1);
+  state.deck = [...state.deck, picked];
+  renderDeck();
+  renderLibrary();
+}
+function currentExercise(){
+  return byId(state.workoutDeck[state.currentIndex]);
+}
+function renderMiniPile(container, ids, {done=false} = {}){
+  container.innerHTML = "";
+  ids.slice(0, 6).forEach((id, i) => {
+    const ex = byId(id);
+    const card = createCard(ex, {stampText: done ? "Done" : "Live"});
+    const mini = document.createElement("div");
+    mini.className = "mini-card";
+    mini.style.left = `${6 + i * 10}px`;
+    mini.style.top = `${8 + i * 10}px`;
+    mini.style.transform = `rotate(${(-4 + i * 2)}deg)`;
+    mini.appendChild(card);
+    container.appendChild(mini);
+  });
+}
+function renderWorkout(){
+  const current = currentExercise();
+  if(!current){
+    showSummary();
+    return;
+  }
+  const currentSecs = state.workoutTimes[state.currentIndex] || 0;
+  const beforeSecs = state.workoutTimes.slice(0, state.currentIndex).reduce((a,b)=>a+b,0);
+  const totalSecs = totalElapsed();
+  els.exerciseTimer.textContent = formatTime(currentSecs);
+  els.totalTimerLine.textContent = `${formatTime(beforeSecs)} + ${formatTime(currentSecs)} = ${formatTime(totalSecs)}`;
+  els.cardPosition.textContent = `Card ${state.currentIndex + 1} / ${state.workoutDeck.length}`;
+  els.workoutStateChip.textContent = state.running ? "Running" : "Paused";
+  els.pauseBtn.textContent = state.running ? "Pause" : "Resume";
+  els.workoutStateCopy.textContent = state.running ? "Done cards move to the completed pile. Skipped cards stay out of the muscle totals." : "The clock is paused. Resume when you want to keep going.";
+  els.activeFootnote.textContent = `Primary muscles: ${current.primary.join(", ")} · Secondary: ${current.secondary.join(", ")}.`;
+  els.activeCardSlot.innerHTML = "";
+  els.activeCardSlot.appendChild(createCard(current, {large:true, stampText:"Live", footerHint: current.primary[0] || current.category}));
+
+  const doneIds = state.workoutDeck.filter((id, index) => state.completed.has(index));
+  const skippedIds = state.workoutDeck.filter((id, index) => state.skipped.has(index));
+  const remainingIds = state.workoutDeck.filter((id, index) => index > state.currentIndex && !state.completed.has(index) && !state.skipped.has(index));
+
+  renderMiniPile(els.donePile, doneIds, {done:true});
+  renderMiniPile(els.remainingPile, remainingIds);
+  els.remainingMeta.textContent = `${Math.max(0, state.workoutDeck.length - state.currentIndex - 1)} cards left`;
+  els.doneMeta.textContent = `${doneIds.length} done · ${skippedIds.length} skipped`;
+  els.remainingList.innerHTML = remainingIds.length
+    ? remainingIds.slice(0,5).map((id, i) => `${i+1}. ${byId(id).title}`).join("<br>")
+    : "No cards left after this one.";
+  els.doneList.innerHTML = doneIds.length
+    ? doneIds.slice(-5).map((id, i) => `${i+1}. ${byId(id).title}`).join("<br>")
+    : "Nothing done yet.";
+  els.prevBtn.disabled = state.currentIndex === 0;
+}
+function tick(){
+  if(!state.running) return;
+  state.workoutTimes[state.currentIndex] = (state.workoutTimes[state.currentIndex] || 0) + 1;
+  renderWorkout();
+}
+function startWorkout(){
+  if(!state.deck.length) return;
+  state.workoutDeck = shuffle([...state.deck]);
+  state.workoutTimes = new Array(state.workoutDeck.length).fill(0);
+  state.currentIndex = 0;
+  state.completed = new Set();
+  state.skipped = new Set();
+  state.running = true;
+  if(state.interval) clearInterval(state.interval);
+  state.interval = setInterval(tick, 1000);
+  setScreen("workoutScreen");
+  renderWorkout();
+}
+function moveToNext(){
+  if(state.currentIndex >= state.workoutDeck.length - 1){
+    showSummary();
+    return;
+  }
+  state.currentIndex += 1;
+  renderWorkout();
+}
+function doneCurrent(){
+  state.completed.add(state.currentIndex);
+  state.skipped.delete(state.currentIndex);
+  moveToNext();
+}
+function skipCurrent(){
+  state.skipped.add(state.currentIndex);
+  state.completed.delete(state.currentIndex);
+  moveToNext();
+}
+function showSummary(){
+  state.running = false;
+  if(state.interval) clearInterval(state.interval);
+  setScreen("summaryScreen");
+  renderSummary();
+}
+function renderSummary(){
+  const completedIds = state.workoutDeck.filter((id, idx) => state.completed.has(idx));
+  const scores = getMuscleScores(completedIds);
+  const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]);
+  const max = sorted.length ? sorted[0][1] : 1;
+  els.summaryTime.textContent = formatTime(totalElapsed());
+  els.summaryCompleted.textContent = String(state.completed.size);
+  els.summarySkipped.textContent = String(state.skipped.size);
+  els.barList.innerHTML = "";
+  if(!sorted.length){
+    els.barList.innerHTML = `<div class="note-box"><strong>No completed cards yet.</strong><br>Mark some cards Done to build a muscle summary.</div>`;
+  } else {
+    sorted.slice(0, 10).forEach(([muscle, score]) => {
+      const row = document.createElement("div");
+      row.className = "bar-row";
+      const pct = Math.max(10, (score / max) * 100);
+      row.innerHTML = `
+        <div class="bar-head"><span>${muscle}</span><span>${score.toFixed(score % 1 ? 1 : 0)}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      `;
+      els.barList.appendChild(row);
+    });
+  }
+  els.summaryFan.innerHTML = "";
+  const fanWidth = els.summaryFan.clientWidth || 640;
+  const fanCardWidth = 150;
+  const fanCount = state.workoutDeck.length;
+  const fanStep = fanCount <= 1 ? 0 : Math.max(8, Math.min(18, (fanWidth - fanCardWidth - 12) / (fanCount - 1)));
+  const fanSpread = fanCardWidth + fanStep * Math.max(0, fanCount - 1);
+  const fanStart = Math.max(0, Math.floor((fanWidth - fanSpread) / 2));
+  state.workoutDeck.forEach((id, i) => {
+    const ex = byId(id);
+    const wrap = document.createElement("div");
+    wrap.style.position = "absolute";
+    wrap.style.left = `${fanStart + i * fanStep}px`;
+    wrap.style.bottom = "0";
+    wrap.style.transform = `rotate(${(-16 + i * 3)}deg)`;
+    wrap.appendChild(createCard(ex, {stampText: state.completed.has(i) ? "Done" : state.skipped.has(i) ? "Skip" : "Live"}));
+    els.summaryFan.appendChild(wrap);
+  });
+
+  const topWorked = sorted.slice(0,3).map(([m]) => m);
+  const allMuscles = Array.from(new Set(EXERCISES.flatMap(ex => [...ex.primary, ...ex.secondary])));
+  const neglected = allMuscles.filter(m => !scores[m]).slice(0, 4);
+
+  els.mostWorkedCard.innerHTML = `<strong>Most worked today:</strong><br>${topWorked.length ? topWorked.join(", ") : "Nothing scored yet."}`;
+  els.nextTimeCard.innerHTML = `<strong>Could use more attention next time:</strong><br>${neglected.length ? neglected.join(", ") : "Pretty balanced session."}`;
+  els.notesCard.innerHTML = `<strong>Read:</strong><br>${state.completed.size > state.skipped.size ? "You completed most of the hand. That session leaned deliberate rather than exploratory." : "You skipped a fair bit. That usually means the deck needs tighter curation next round."}`;
+}
+function bindEvents(){
+  bindPseudoButton(els.infoPopupHide, ev => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    closeInfoPopup();
+  });
+  els.infoPopup.addEventListener("pointerdown", ev => ev.stopPropagation());
+  document.addEventListener("click", ev => {
+    if(els.infoPopup.classList.contains("hidden")) return;
+    if(ev.target.closest(".card-info-toggle") || ev.target.closest("#infoPopup")) return;
+    closeInfoPopup();
+  });
+  document.addEventListener("pointerdown", ev => {
+    if(ev.target.closest(".card-button")) return;
+    if(state.focusedLibraryId !== null){
+      state.focusedLibraryId = null;
+      renderLibrary();
+    }
+    if(ev.target.closest(".deck-card")) return;
+    if(state.focusedDeckId !== null){
+      state.focusedDeckId = null;
+      renderDeck();
+    }
+  });
+  els.drawSevenBtn.addEventListener("click", () => drawRandomDeck(7));
+  els.drawOneBtn.addEventListener("click", drawOneCard);
+  els.clearDeckBtn.addEventListener("click", () => {
+    state.deck = [];
+    renderDeck();
+    renderLibrary();
+  });
+  els.startWorkoutBtn.addEventListener("click", startWorkout);
+  els.searchInput.addEventListener("input", e => {
+    state.search = e.target.value;
+    pickVisibleBatch();
+  });
+  els.clearSearchBtn.addEventListener("click", () => {
+    state.search = "";
+    els.searchInput.value = "";
+    pickVisibleBatch();
+  });
+  els.differentTenBtn.addEventListener("click", pickVisibleBatch);
+
+  els.pauseBtn.addEventListener("click", () => {
+    state.running = !state.running;
+    renderWorkout();
+  });
+  els.prevBtn.addEventListener("click", () => {
+    if(state.currentIndex > 0){
+      state.currentIndex -= 1;
+      renderWorkout();
+    }
+  });
+  els.skipBtn.addEventListener("click", skipCurrent);
+  els.doneBtn.addEventListener("click", doneCurrent);
+  els.finishBtn.addEventListener("click", showSummary);
+  els.backToDeckBtn.addEventListener("click", () => {
+    state.running = false;
+    if(state.interval) clearInterval(state.interval);
+    setScreen("builderScreen");
+  });
+  els.backToBuilderBtn.addEventListener("click", () => {
+    setScreen("builderScreen");
+  });
+  els.homeBtn.addEventListener("click", () => {
+    state.running = false;
+    if(state.interval) clearInterval(state.interval);
+    closeInfoPopup();
+    setScreen("builderScreen");
+  });
+  window.addEventListener("resize", () => {
+    positionInfoPopup(state.infoAnchor);
+    renderDeck();
+    renderLibrary();
+  });
+  window.addEventListener("keydown", ev => {
+    if(ev.key === "Escape") closeInfoPopup();
+    if(ev.key === "Escape" && state.focusedLibraryId !== null){
+      state.focusedLibraryId = null;
+      renderLibrary();
+    }
+  });
+}
+function init(){
+  renderFilters();
+  populateSuggestions();
+  pickVisibleBatch();
+  renderDeck();
+  bindEvents();
+}
+init();
+</script>
+</body>
+</html>

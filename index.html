@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Workout Deck</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <div class="window">
+    <div class="titlebar">
+      <div class="title-left">
+        <h1>Workout Deck</h1>
+      </div>
+        <div class="title-right">
+        <div class="title-note">desk accessory build 04</div>
+        <button id="homeBtn" class="home-btn" type="button">Return home</button>
+      </div>
+    </div>
+
+    <div class="window-body">
+      <section id="builderScreen" class="screen active">
+        <div class="stack">
+          <div class="panel pad">
+            <div class="section-head">
+              <div class="header-cluster">
+                <div class="icon-tile" aria-hidden="true">
+                  <svg viewBox="0 0 32 32">
+                    <rect x="4" y="7" width="12" height="16" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                    <rect x="10" y="11" width="12" height="16" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                    <rect x="16" y="5" width="12" height="16" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="section-title">Hand</h2>
+                </div>
+              </div>
+            </div>
+            <div class="deck-top-layout">
+              <div class="deck-stage" id="deckDropZone">
+                <div id="handCountBubble" class="hand-count-bubble" aria-live="polite">
+                  <span id="deckMetaChip" class="hand-count-num">0</span>
+                  <span class="hand-count-label">In hand</span>
+                </div>
+                <div class="deck-surface" id="deckSurface"></div>
+                <button id="clearDeckBtn" class="classic-btn btn-muted deck-clear-btn">Clear hand</button>
+              </div>
+              <div class="deck-side">
+                <div class="mini-panel">
+                  <div class="mono">Quick draw</div>
+                  <div class="control-row" style="align-items:stretch">
+                    <button id="drawSevenBtn" class="classic-btn btn-random" style="flex:1">Draw 7</button>
+                    <button id="drawOneBtn" class="classic-btn btn-alt">Draw 1</button>
+                  </div>
+                </div>
+                <button id="startWorkoutBtn" class="classic-btn btn-start btn-primary-cta">Start session</button>
+                <div class="mini-panel balance-panel">
+                  <div class="balance-title-row">
+                    <div class="mono">Hand balance</div>
+                    <div id="handBalanceMeta" class="mono">0 muscles</div>
+                  </div>
+                  <div id="handBalanceList" class="balance-mini-list"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel pad">
+            <div class="library-top">
+              <div class="section-head">
+                <div class="header-cluster">
+                  <div class="icon-tile" aria-hidden="true">
+                    <svg viewBox="0 0 32 32">
+                      <rect x="6" y="6" width="20" height="18" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                      <rect x="11" y="9" width="10" height="8" fill="none" stroke="#222" stroke-width="2"/>
+                      <rect x="14" y="24" width="4" height="3" fill="#222"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 class="section-title">Library</h2>
+                  </div>
+                </div>
+                <div class="mono" id="libraryMeta">10 visible · 0 matching · 0 total</div>
+              </div>
+              <div class="library-controls">
+                <div class="search-wrap">
+                  <input id="searchInput" class="search-input" type="text" list="librarySuggestions" placeholder="Search workout name, category, or muscle..." />
+                  <datalist id="librarySuggestions"></datalist>
+                </div>
+                <button id="differentTenBtn" class="classic-btn btn-small btn-feature">Show me a different 10</button>
+                <button id="clearSearchBtn" class="classic-btn btn-small">Clear search</button>
+              </div>
+              <div class="filter-strip" id="filterStrip"></div>
+              <div id="libraryGrid" class="library-grid"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="workoutScreen" class="screen">
+        <div class="workout-grid">
+          <div class="workout-top">
+            <div class="panel pad timer-panel">
+              <div class="mono">Current exercise</div>
+              <div id="exerciseTimer" class="big-timer">00:00</div>
+              <div id="totalTimerLine" class="small-timer">00:00 + 00:00 = 00:00</div>
+            </div>
+
+            <div class="panel pad state-panel">
+              <div class="icon-tile" aria-hidden="true">
+                <svg viewBox="0 0 32 32">
+                  <rect x="3" y="8" width="12" height="16" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                  <rect x="10" y="6" width="12" height="16" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                  <rect x="17" y="10" width="12" height="16" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                </svg>
+              </div>
+              <div>
+                <div class="mono">Table state</div>
+                <h2 class="state-title">Watch the hand shrink as you work through it.</h2>
+                <div class="copy">Done cards move to the completed pile. Skipped cards stay out of the muscle totals.</div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="workout-main">
+            <div class="panel pile-box">
+              <div>
+                <div class="pile-title">Remaining pile</div>
+                <div id="remainingMeta" class="pile-sub">0 cards left</div>
+              </div>
+              <div id="remainingPile" class="mini-pile"></div>
+              <div id="remainingList" class="list-note"></div>
+            </div>
+
+            <div class="active-shell">
+              <div class="active-top">
+                <div>
+                  <div class="mono" id="cardPosition">Card 1 of 1</div>
+                  <h2>In play</h2>
+                  <div id="workoutStateCopy" class="copy">Big card front and center, like a card table.</div>
+                </div>
+                <div class="card-counter" id="workoutStateChip">Running</div>
+              </div>
+              <div class="active-center" id="activeCardSlot"></div>
+              <div class="active-bottom">
+                <div class="active-details">
+                  <div class="active-detail-card">
+                    <div class="active-detail-label">How to do it</div>
+                    <div class="active-detail-copy" id="activeHowTo">Use Done when you finish the exercise.</div>
+                  </div>
+                  <div class="active-detail-card">
+                    <div class="active-detail-label">Tip</div>
+                    <div class="active-detail-copy" id="activeTip">Skip leaves it out of the final muscle totals.</div>
+                  </div>
+                </div>
+                <div class="active-actions">
+                  <div class="auto-panel">
+                    <div id="autoCountdown" class="auto-countdown">01:00</div>
+                    <button id="autoToggleBtn" class="classic-btn auto-toggle-btn" type="button">Auto off</button>
+                    <div class="auto-row">
+                      <button id="auto1Btn" class="classic-btn auto-minute-btn" type="button">1 min</button>
+                      <button id="auto2Btn" class="classic-btn auto-minute-btn" type="button">2 min</button>
+                      <button id="auto3Btn" class="classic-btn auto-minute-btn" type="button">3 min</button>
+                    </div>
+                    <button id="autoAdd30Btn" class="classic-btn auto-add-btn" type="button">Add 30s</button>
+                    <div id="autoMeta" class="auto-meta">Auto off</div>
+                  </div>
+                  <button id="pauseBtn" class="classic-btn pause-btn" type="button" aria-pressed="true">
+                    <span class="pause-switch">
+                      <span class="pause-side pause-side-off">Paused</span>
+                      <span class="pause-thumb"></span>
+                      <span class="pause-side pause-side-on">Playing</span>
+                    </span>
+                  </button>
+                  <button id="doneBtn" class="classic-btn done-btn">Done with this card</button>
+                  <div class="active-funfact" id="activeFunFactWrap">
+                    <div class="active-funfact-label" id="activeFunFactLabel">Fun fact</div>
+                    <div class="active-funfact-copy" id="activeFunFact">A fun fact will show here while a card is active.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel pile-box">
+              <div>
+                <div class="pile-title">Completed pile</div>
+                <div id="doneMeta" class="pile-sub">0 done · 0 skipped</div>
+              </div>
+              <div id="donePile" class="mini-pile"></div>
+              <div id="doneList" class="list-note">Nothing done yet.</div>
+            </div>
+          </div>
+
+          <div class="workout-bottom">
+            <div class="utility-actions">
+              <button id="prevBtn" class="classic-btn btn-alt">Previous</button>
+              <button id="skipBtn" class="classic-btn btn-alt">Skip this card</button>
+            </div>
+            <div class="finish-actions">
+              <button id="finishBtn" class="classic-btn btn-clear">Finish workout</button>
+              <button id="backToDeckBtn" class="classic-btn">Back to hand</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="summaryScreen" class="screen">
+        <div class="summary-grid">
+          <div class="summary-top">
+            <div class="summary-felt">
+              <div class="pile-title" style="color:#eef5ef">Session hand</div>
+              <div id="summaryFan" class="summary-fan"></div>
+            </div>
+            <div class="stat-stack">
+              <div class="stat-box"><div class="stat-label">Total elapsed</div><div id="summaryTime" class="stat-value">00:00</div></div>
+              <div class="stat-box"><div class="stat-label">Completed</div><div id="summaryCompleted" class="stat-value">0</div></div>
+              <div class="stat-box"><div class="stat-label">Skipped</div><div id="summarySkipped" class="stat-value">0</div></div>
+              <button id="backToBuilderBtn" class="classic-btn btn-start">Back to hand builder</button>
+            </div>
+          </div>
+
+          <div class="summary-bottom">
+            <div class="panel pad">
+              <div class="section-head">
+                <div class="header-cluster">
+                  <div class="icon-tile" aria-hidden="true">
+                    <svg viewBox="0 0 32 32">
+                      <rect x="6" y="7" width="20" height="18" fill="#f7f3ea" stroke="#222" stroke-width="2"/>
+                      <rect x="13" y="5" width="6" height="2" fill="#222"/>
+                      <circle cx="16" cy="16" r="5" fill="none" stroke="#222" stroke-width="2"/>
+                      <line x1="16" y1="16" x2="16" y2="12" stroke="#222" stroke-width="2"/>
+                      <line x1="16" y1="16" x2="19" y2="18" stroke="#222" stroke-width="2"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 class="section-title" style="font-size:2.2rem">Muscles worked</h2>
+                    <div class="copy">Counted from the cards you marked Done.</div>
+                  </div>
+                </div>
+              </div>
+              <div id="barList" class="bar-list"></div>
+            </div>
+
+            <div class="panel pad">
+              <div class="section-head">
+                <div>
+                  <h2 class="section-title" style="font-size:2.1rem">Next time</h2>
+                  <div class="copy">A quick read on what got the most attention and what was neglected.</div>
+                </div>
+              </div>
+              <div id="summaryExerciseList" class="summary-exercise-list"></div>
+              <div class="rec-list">
+                <div class="rec-card" id="mostWorkedCard"></div>
+                <div class="rec-card" id="nextTimeCard"></div>
+                <div class="rec-card" id="notesCard"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="infoPopup" class="info-popup hidden" aria-hidden="true">
+  <div class="card-info-head">
+    <div id="infoPopupTitle" class="card-info-title">Exercise note</div>
+    <div id="infoPopupHide" class="classic-btn btn-muted card-info-hide" role="button" tabindex="0">Hide</div>
+  </div>
+  <div class="card-info-section">
+    <div class="card-info-label">How to do it</div>
+    <div id="infoPopupHowTo" class="card-info-copy"></div>
+  </div>
+  <div class="card-info-section">
+    <div class="card-info-label">Tip</div>
+    <div id="infoPopupTip" class="card-info-copy"></div>
+  </div>
+  <div class="card-info-section">
+    <div class="card-info-label">Couplet</div>
+    <div id="infoPopupCouplet" class="card-info-copy card-info-couplet"></div>
+  </div>
+</div>
+
+<script src="exercises.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
