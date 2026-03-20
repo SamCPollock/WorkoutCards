@@ -25,7 +25,6 @@ const state = {
   workoutTimes: [],
   currentIndex: 0,
   completed: new Set(),
-  skipped: new Set(),
   autoEnabled: false,
   autoDefaultSecs: 60,
   autoBaseSecs: [],
@@ -47,6 +46,8 @@ const els = {
   builderScreen: document.getElementById("builderScreen"),
   workoutScreen: document.getElementById("workoutScreen"),
   summaryScreen: document.getElementById("summaryScreen"),
+  workoutTop: document.querySelector(".workout-top"),
+  activeTop: document.querySelector(".active-top"),
   handCountBubble: document.getElementById("handCountBubble"),
   deckSurface: document.getElementById("deckSurface"),
   deckDropZone: document.getElementById("deckDropZone"),
@@ -54,7 +55,6 @@ const els = {
   searchInput: document.getElementById("searchInput"),
   librarySuggestions: document.getElementById("librarySuggestions"),
   homeBtn: document.getElementById("homeBtn"),
-  clearSearchBtn: document.getElementById("clearSearchBtn"),
   differentTenBtn: document.getElementById("differentTenBtn"),
   filterStrip: document.getElementById("filterStrip"),
   libraryGrid: document.getElementById("libraryGrid"),
@@ -63,6 +63,8 @@ const els = {
   drawOneBtn: document.getElementById("drawOneBtn"),
   clearDeckBtn: document.getElementById("clearDeckBtn"),
   startWorkoutBtn: document.getElementById("startWorkoutBtn"),
+  handBalanceDock: document.getElementById("handBalanceDock"),
+  balancePopupBtn: document.getElementById("balancePopupBtn"),
   handBalanceMeta: document.getElementById("handBalanceMeta"),
   handBalanceList: document.getElementById("handBalanceList"),
   exerciseTimer: document.getElementById("exerciseTimer"),
@@ -74,8 +76,6 @@ const els = {
   donePile: document.getElementById("donePile"),
   doneList: document.getElementById("doneList"),
   cardPosition: document.getElementById("cardPosition"),
-  workoutStateChip: document.getElementById("workoutStateChip"),
-  workoutStateCopy: document.getElementById("workoutStateCopy"),
   activeCardSlot: document.getElementById("activeCardSlot"),
   activeFunFactWrap: document.getElementById("activeFunFactWrap"),
   activeFunFactLabel: document.getElementById("activeFunFactLabel"),
@@ -89,21 +89,18 @@ const els = {
   autoMeta: document.getElementById("autoMeta"),
   activeHowTo: document.getElementById("activeHowTo"),
   activeTip: document.getElementById("activeTip"),
+  timerPanel: document.querySelector(".timer-panel"),
+  activeActions: document.querySelector(".active-actions"),
   pauseBtn: document.getElementById("pauseBtn"),
-  prevBtn: document.getElementById("prevBtn"),
-  skipBtn: document.getElementById("skipBtn"),
   finishBtn: document.getElementById("finishBtn"),
-  backToDeckBtn: document.getElementById("backToDeckBtn"),
   doneBtn: document.getElementById("doneBtn"),
+  progressRingFill: document.getElementById("progressRingFill"),
   summaryFan: document.getElementById("summaryFan"),
   summaryTime: document.getElementById("summaryTime"),
   summaryCompleted: document.getElementById("summaryCompleted"),
-  summarySkipped: document.getElementById("summarySkipped"),
   barList: document.getElementById("barList"),
   summaryExerciseList: document.getElementById("summaryExerciseList"),
   mostWorkedCard: document.getElementById("mostWorkedCard"),
-  nextTimeCard: document.getElementById("nextTimeCard"),
-  notesCard: document.getElementById("notesCard"),
   backToBuilderBtn: document.getElementById("backToBuilderBtn"),
   infoPopup: document.getElementById("infoPopup"),
   infoPopupTitle: document.getElementById("infoPopupTitle"),
@@ -238,6 +235,11 @@ function setScreen(name){
   els[name].classList.add("active");
   if(name !== "workoutScreen"){
     els.windowFrame.classList.remove("is-paused-tone");
+  }
+}
+function syncResponsiveWorkoutTimer(){
+  if(!els.activeTop.contains(els.timerPanel)){
+    els.activeTop.appendChild(els.timerPanel);
   }
 }
 function addToDeck(id){
@@ -933,7 +935,7 @@ function renderDeck(){
   els.handCountBubble.classList.remove("hidden");
   els.handCountBubble.style.setProperty("--fill", String(Math.max(0, Math.min(1, state.deck.length / MAX_DECK))));
   els.startWorkoutBtn.disabled = state.deck.length === 0;
-  els.clearDeckBtn.classList.toggle("hidden", state.deck.length === 0);
+  els.clearDeckBtn.disabled = state.deck.length === 0;
   renderHandBalance();
   els.deckSurface.innerHTML = "";
   if(!state.deck.length){
@@ -944,19 +946,26 @@ function renderDeck(){
     return;
   }
   const W = els.deckSurface.clientWidth || 640;
-  const H = els.deckSurface.clientHeight || 234;
-  const cardWidth = window.innerWidth < 640 ? 138 : 150;
-  const cardHeight = window.innerWidth < 640 ? 200 : 212;
+  const H = els.deckSurface.clientHeight || 310;
+  const narrow = window.innerWidth < 640;
+  const cardWidth = narrow ? 138 : 188;
+  const cardHeight = narrow ? 200 : 272;
   const count = state.deck.length;
   const pad = 12;
-  const previewScale = window.innerWidth < 640 ? 0.9 : 0.96;
+  const previewScale = narrow ? 0.9 : 0.88;
   const previewWidth = Math.round(cardWidth * previewScale);
   const previewHeight = Math.round(cardHeight * previewScale);
-  const available = Math.max(40, W - previewWidth - pad * 2);
-  const roomyMaxGap = window.innerWidth < 640 ? 92 : 108;
-  const comfyGap = window.innerWidth < 640 ? 48 : 56;
-  const fitGap = count <= 1 ? 0 : available / Math.max(1, count - 1);
-  const xGap = count <= 1 ? 0 : Math.min(roomyMaxGap, Math.max(10, fitGap > comfyGap ? comfyGap : fitGap));
+  let xGap;
+  if(narrow){
+    const available = Math.max(40, W - previewWidth - pad * 2);
+    const roomyMaxGap = 92, comfyGap = 48;
+    const fitGap = count <= 1 ? 0 : available / Math.max(1, count - 1);
+    xGap = count <= 1 ? 0 : Math.min(roomyMaxGap, Math.max(10, fitGap > comfyGap ? comfyGap : fitGap));
+  } else {
+    const overlapGap = Math.round(previewWidth * 0.9); // 10% overlap preferred
+    const targetGap = count <= 1 ? 0 : (W * 0.95 - previewWidth) / Math.max(1, count - 1);
+    xGap = count <= 1 ? 0 : Math.min(overlapGap, targetGap);
+  }
   const rowWidth = previewWidth + xGap * Math.max(0, count - 1);
   const rowStart = count <= 1 ? Math.max(pad, Math.floor((W - previewWidth) / 2)) : Math.max(pad, Math.floor((W - rowWidth) / 2));
   const baseTop = Math.max(0, H - previewHeight + 20);
@@ -978,6 +987,7 @@ function renderDeck(){
     holder.style.transform = `rotate(${tilt}deg) scale(${previewScale})`;
     holder.style.zIndex = String(isFocused ? 1000 : i + 1);
     holder.appendChild(createCard(ex, {
+      large: !narrow,
       stampText:"In hand",
       footerHint:ex.primary[0] || ex.category,
       removable:true,
@@ -1066,6 +1076,12 @@ function renderMiniPile(container, ids, {done=false} = {}){
     container.appendChild(mini);
   });
 }
+function updateProgressRing(){
+  if(!els.progressRingFill || !state.workoutDeck.length) return;
+  const progress = state.currentIndex / state.workoutDeck.length;
+  els.progressRingFill.style.strokeDashoffset = 452 * (1 - progress);
+}
+
 function renderWorkout(){
   const current = currentExercise();
   if(!current){
@@ -1078,12 +1094,10 @@ function renderWorkout(){
   els.exerciseTimer.textContent = formatTime(currentSecs);
   els.totalTimerLine.textContent = `${formatTime(beforeSecs)} + ${formatTime(currentSecs)} = ${formatTime(totalSecs)}`;
   els.cardPosition.textContent = `Card ${state.currentIndex + 1} / ${state.workoutDeck.length}`;
-  els.workoutStateChip.textContent = state.running ? "Running" : "Paused";
   els.windowFrame.classList.toggle("is-paused-tone", !state.running);
   els.pauseBtn.setAttribute("aria-pressed", state.running ? "true" : "false");
   els.pauseBtn.classList.toggle("is-running", state.running);
   els.pauseBtn.classList.toggle("is-paused", !state.running);
-  els.workoutStateCopy.textContent = state.running ? "Done cards move to the completed pile. Skipped cards stay out of the muscle totals." : "The clock is paused. Resume when you want to keep going.";
   els.autoToggleBtn.textContent = state.autoEnabled ? "Auto on" : "Auto off";
   els.autoToggleBtn.classList.toggle("is-on", state.autoEnabled);
   const autoRemaining = Math.max(0, currentAutoTargetSecs() - currentSecs);
@@ -1101,10 +1115,10 @@ function renderWorkout(){
     state.activeFunFactCardId = current.id;
     if(funFacts.length){
       state.activeFunFactText = funFacts[Math.floor(Math.random() * funFacts.length)];
-      state.activeFunFactLabel.textContent = "Fun fact";
+      els.activeFunFactLabel.textContent = "Fun fact";
     } else {
       state.activeFunFactText = "";
-      state.activeFunFactLabel.textContent = "Fun fact";
+      els.activeFunFactLabel.textContent = "Fun fact";
     }
   }
   els.activeFunFactWrap.classList.toggle("hidden", !state.activeFunFactText);
@@ -1115,21 +1129,21 @@ function renderWorkout(){
   els.activeCardSlot.appendChild(createCard(current, {large:true, stampText:"Live", footerHint: current.primary[0] || current.category}));
 
   const doneIds = state.workoutDeck.filter((id, index) => state.completed.has(index));
-  const skippedIds = state.workoutDeck.filter((id, index) => state.skipped.has(index));
-  const remainingIds = state.workoutDeck.filter((id, index) => index > state.currentIndex && !state.completed.has(index) && !state.skipped.has(index));
+  const remainingIds = state.workoutDeck.filter((id, index) => index > state.currentIndex && !state.completed.has(index));
 
   renderMiniPile(els.donePile, doneIds, {done:true});
   renderMiniPile(els.remainingPile, remainingIds);
   els.remainingMeta.textContent = `${Math.max(0, state.workoutDeck.length - state.currentIndex - 1)} cards left`;
-  els.doneMeta.textContent = `${doneIds.length} done · ${skippedIds.length} skipped`;
+  els.doneMeta.textContent = `${doneIds.length} done`;
   els.remainingList.innerHTML = remainingIds.length
     ? remainingIds.slice(0,5).map((id, i) => `${i+1}. ${byId(id).title}`).join("<br>")
     : "No cards left after this one.";
   els.doneList.innerHTML = doneIds.length
     ? doneIds.slice(-5).map((id, i) => `${i+1}. ${byId(id).title}`).join("<br>")
     : "Nothing done yet.";
-  els.prevBtn.disabled = state.currentIndex === 0;
+  updateProgressRing();
 }
+
 function tick(){
   if(!state.running || state.autoAdvancePending) return;
   state.workoutTimes[state.currentIndex] = (state.workoutTimes[state.currentIndex] || 0) + 1;
@@ -1155,7 +1169,6 @@ function startWorkout(){
   state.autoExtraSecs = new Array(state.workoutDeck.length).fill(0);
   state.currentIndex = 0;
   state.completed = new Set();
-  state.skipped = new Set();
   state.activeFunFactCardId = null;
   state.activeFunFactText = "";
   state.running = true;
@@ -1176,13 +1189,6 @@ function moveToNext(){
 function doneCurrent(){
   clearAutoAdvancePending();
   state.completed.add(state.currentIndex);
-  state.skipped.delete(state.currentIndex);
-  moveToNext();
-}
-function skipCurrent(){
-  clearAutoAdvancePending();
-  state.skipped.add(state.currentIndex);
-  state.completed.delete(state.currentIndex);
   moveToNext();
 }
 function showSummary(){
@@ -1199,7 +1205,6 @@ function renderSummary(){
   const max = sorted.length ? sorted[0][1] : 1;
   els.summaryTime.textContent = formatTime(totalElapsed());
   els.summaryCompleted.textContent = String(state.completed.size);
-  els.summarySkipped.textContent = String(state.skipped.size);
   els.summaryExerciseList.innerHTML = "";
   els.barList.innerHTML = "";
   if(!sorted.length){
@@ -1247,17 +1252,12 @@ function renderSummary(){
     wrap.style.left = `${fanStart + i * fanStep}px`;
     wrap.style.bottom = "0";
     wrap.style.transform = `rotate(${(-16 + i * 3)}deg)`;
-    wrap.appendChild(createCard(ex, {stampText: state.completed.has(i) ? "Done" : state.skipped.has(i) ? "Skip" : "Live"}));
+    wrap.appendChild(createCard(ex, {stampText: state.completed.has(i) ? "Done" : "Live"}));
     els.summaryFan.appendChild(wrap);
   });
 
   const topWorked = sorted.slice(0,3).map(([m]) => m);
-  const allMuscles = Array.from(new Set(EXERCISES.flatMap(ex => [...ex.primary, ...ex.secondary])));
-  const neglected = allMuscles.filter(m => !scores[m]).slice(0, 4);
-
   els.mostWorkedCard.innerHTML = `<strong>Most worked today:</strong><br>${topWorked.length ? topWorked.join(", ") : "Nothing scored yet."}`;
-  els.nextTimeCard.innerHTML = `<strong>Could use more attention next time:</strong><br>${neglected.length ? neglected.join(", ") : "Pretty balanced session."}`;
-  els.notesCard.innerHTML = `<strong>Read:</strong><br>${state.completed.size > state.skipped.size ? "You completed most of the hand. That session leaned deliberate rather than exploratory." : "You skipped a fair bit. That usually means the deck needs tighter curation next round."}`;
 }
 function bindEvents(){
   bindPseudoButton(els.infoPopupHide, ev => {
@@ -1283,6 +1283,17 @@ function bindEvents(){
       renderDeck();
     }
   });
+  els.balancePopupBtn.addEventListener("click", ev => {
+    ev.stopPropagation();
+    els.handBalanceDock.classList.toggle("balance-open");
+  });
+  document.addEventListener("click", ev => {
+    if(els.handBalanceDock.classList.contains("balance-open") &&
+       !els.handBalanceDock.contains(ev.target) &&
+       ev.target !== els.balancePopupBtn){
+      els.handBalanceDock.classList.remove("balance-open");
+    }
+  });
   els.drawSevenBtn.addEventListener("click", () => drawRandomDeck(7));
   els.drawOneBtn.addEventListener("click", drawOneCard);
   els.clearDeckBtn.addEventListener("click", () => {
@@ -1293,11 +1304,6 @@ function bindEvents(){
   els.startWorkoutBtn.addEventListener("click", startWorkout);
   els.searchInput.addEventListener("input", e => {
     state.search = e.target.value;
-    pickVisibleBatch();
-  });
-  els.clearSearchBtn.addEventListener("click", () => {
-    state.search = "";
-    els.searchInput.value = "";
     pickVisibleBatch();
   });
   els.differentTenBtn.addEventListener("click", pickVisibleBatch);
@@ -1317,6 +1323,7 @@ function bindEvents(){
   [[els.auto1Btn, 60], [els.auto2Btn, 120], [els.auto3Btn, 180]].forEach(([btn, secs]) => {
     btn.addEventListener("click", () => {
       state.autoDefaultSecs = secs;
+      state.autoExtraSecs[state.currentIndex] = 0;
       renderWorkout();
     });
   });
@@ -1324,22 +1331,8 @@ function bindEvents(){
     state.autoExtraSecs[state.currentIndex] = (state.autoExtraSecs[state.currentIndex] || 0) + 30;
     renderWorkout();
   });
-  els.prevBtn.addEventListener("click", () => {
-    if(state.currentIndex > 0){
-      clearAutoAdvancePending();
-      state.currentIndex -= 1;
-      renderWorkout();
-    }
-  });
-  els.skipBtn.addEventListener("click", skipCurrent);
   els.doneBtn.addEventListener("click", doneCurrent);
   els.finishBtn.addEventListener("click", showSummary);
-  els.backToDeckBtn.addEventListener("click", () => {
-    clearAutoAdvancePending();
-    state.running = false;
-    if(state.interval) clearInterval(state.interval);
-    setScreen("builderScreen");
-  });
   els.backToBuilderBtn.addEventListener("click", () => {
     setScreen("builderScreen");
   });
@@ -1351,6 +1344,7 @@ function bindEvents(){
     setScreen("builderScreen");
   });
   window.addEventListener("resize", () => {
+    syncResponsiveWorkoutTimer();
     positionInfoPopup(state.infoAnchor);
     renderDeck();
     renderLibrary();
@@ -1364,6 +1358,7 @@ function bindEvents(){
   });
 }
 function init(){
+  syncResponsiveWorkoutTimer();
   renderFilters();
   populateSuggestions();
   pickVisibleBatch();
