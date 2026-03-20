@@ -332,8 +332,9 @@ button{cursor:pointer}
   font-size:.88rem;
 }
 .library-top{display:grid;gap:10px}
-.library-search-row{display:flex;gap:10px;align-items:flex-start}
+.library-search-row{display:flex;gap:10px;align-items:flex-end}
 .library-controls{display:flex;flex-direction:column;gap:10px;width:fit-content}
+#differentTenBtn{align-self:flex-end}
 .filter-strip{
   display:inline-flex;
   gap:6px;
@@ -701,7 +702,7 @@ button{cursor:pointer}
 }
 .active-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .active-top .copy{color:#e2efe4}
-.active-card-row{display:grid;grid-template-columns:140px 310px 282px;gap:12px;align-items:start}
+.active-card-row{display:grid;grid-template-columns:164px 310px 282px;gap:12px;align-items:start}
 .active-card-col{display:flex;flex-direction:column;align-items:center;gap:14px}
 .active-center{display:flex;justify-content:center;}
 .active-funfact{
@@ -804,12 +805,11 @@ button{cursor:pointer}
 }
 .active-detail-card{
   width:100%;
-  min-height:168px;
   background:rgba(72,31,15,.32);
   border:2px solid rgba(255,207,107,.38);
   box-shadow:inset 0 0 0 1px rgba(255,244,205,.08);
   padding:10px 12px;
-  text-align:center;
+  text-align:left;
 }
 .active-detail-label{
   font-family:var(--mono);
@@ -826,8 +826,25 @@ button{cursor:pointer}
 .done-btn{background:#f0e15d;width:144px;height:144px;min-width:0;min-height:0;padding:0;font-size:1.2rem;font-weight:900;letter-spacing:.04em;border-radius:50%}
 .next-btn-wrap{position:relative;width:156px;height:156px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .progress-ring{position:absolute;top:0;left:0;pointer-events:none;transform:rotate(-90deg)}
-.progress-ring-track{fill:none;stroke:rgba(255,224,139,.18);stroke-width:5}
+.progress-ring-track{fill:none;stroke:rgba(255,224,139,.4);stroke-width:5}
 .progress-ring-fill{fill:none;stroke:#ffe08b;stroke-width:5;stroke-linecap:round;stroke-dasharray:452;stroke-dashoffset:452;transition:stroke-dashoffset .5s ease}
+.skip-btn{
+  background:none;
+  border:none;
+  box-shadow:none;
+  color:rgba(255,220,160,.55);
+  font-family:var(--mono);
+  font-size:.68rem;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  padding:4px 8px;
+  min-height:0;
+  cursor:pointer;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  text-decoration-style:dotted;
+}
+.skip-btn:hover{color:rgba(255,220,160,.9);transform:none;box-shadow:none}
 .workout-bottom{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
 .workout-bottom .classic-btn{min-height:38px;padding:8px 12px;font-size:.94rem;box-shadow:2px 2px 0 rgba(0,0,0,.18)}
 #builderScreen .panel{
@@ -1010,7 +1027,7 @@ button{cursor:pointer}
   font-weight:900;
 }
 #workoutScreen .timer-panel .small-timer{
-  font-size:.55rem;
+  font-size:.68rem;
   color:#ffd06b;
   line-height:1.1;
 }
@@ -1352,6 +1369,100 @@ button{cursor:pointer}
   line-height:1.4;
   box-shadow:inset 0 0 0 1px #f4eedf;
 }
+/* ── Card preview overlay ─────────────────────────────── */
+.card-preview-overlay{
+  position:fixed;
+  inset:0;
+  z-index:220;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:16px 12px 24px;
+}
+.card-preview-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.74);
+  z-index:0;
+}
+.card-preview-panel{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:340px;
+  background:#1d5e38;
+  border:3px solid;
+  border-color:#43aa78 #073620 #073620 #66c695;
+  box-shadow:6px 6px 0 rgba(0,0,0,.45), inset 0 0 0 2px rgba(241,226,162,.14);
+  padding:14px;
+  display:grid;
+  gap:12px;
+}
+.card-preview-card{
+  display:flex;
+  justify-content:center;
+}
+.card-preview-card .card.large{
+  zoom:1.1;
+  border-width:4px;
+  border-radius:10px;
+  box-shadow:5px 5px 0 rgba(0,0,0,.3), inset 0 0 0 2px #fff5d8;
+}
+.card-preview-info{
+  display:grid;
+  gap:8px;
+}
+.card-preview-section{display:grid;gap:3px}
+.card-preview-label{
+  font-family:var(--mono);
+  font-size:.68rem;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+  color:#f2c56a;
+  opacity:.88;
+}
+.card-preview-copy{
+  color:#fff1c5;
+  font-size:.88rem;
+  line-height:1.4;
+}
+.card-preview-btns{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  align-items:center;
+}
+.card-preview-add{
+  background:#e0b12f;
+  color:#34180b;
+  border-width:3px;
+  border-color:#ffe28a #76500f #76500f #fff0ae;
+  box-shadow:3px 3px 0 rgba(0,0,0,.24);
+  text-shadow:1px 1px 0 rgba(255,242,187,.3);
+  min-height:46px;
+}
+.card-preview-add:hover{background:#efc54a}
+.card-preview-add:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  background:#a07a22;
+  transform:none;
+  box-shadow:1px 1px 0 rgba(0,0,0,.2);
+}
+.card-preview-close{
+  background:rgba(72,31,15,.36);
+  color:#ffdca4;
+  border-width:2px;
+  border-color:#a07450 #3a1808 #3a1808 #c89a6a;
+  box-shadow:2px 2px 0 rgba(0,0,0,.2);
+  min-height:46px;
+  padding:8px 12px;
+  white-space:nowrap;
+}
+.card-preview-close:hover{background:rgba(72,31,15,.55)}
+/* ────────────────────────────────────────────────────── */
 .hidden{display:none !important}
 @media (max-width: 640px){
   .app{padding:6px}
@@ -1432,6 +1543,8 @@ button{cursor:pointer}
     gap:6px;
     position:relative;
   }
+  .hand-sidebar{order:-1}
+  .deck-stage{order:0}
   #handBalanceDock{display:none}
   #handBalanceDock.balance-open{
     display:block;
@@ -1537,23 +1650,25 @@ button{cursor:pointer}
     display:flex;
     width:100%;
     max-width:none;
-    flex-wrap:wrap;
-    padding:3px;
-    gap:3px;
+    flex-wrap:nowrap;
+    padding:2px;
+    gap:2px;
   }
   .filter-chip{
-    flex:0 0 auto;
-    min-height:20px;
-    padding:2px 6px;
-    font-size:.52rem;
+    flex:1 1 0;
+    min-width:0;
+    min-height:30px;
+    padding:3px 2px;
+    font-size:.5rem;
+    letter-spacing:.04em;
+    text-align:center;
   }
   .library-grid{
     margin-top:0;
     min-height:0;
     display:grid;
-    grid-template-columns:repeat(5, minmax(0, 1fr));
-    grid-template-rows:repeat(2, minmax(0, 1fr));
-    gap:4px;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:6px;
     overflow:hidden;
     align-items:start;
   }
@@ -1565,30 +1680,36 @@ button{cursor:pointer}
   .library-grid .card{
     width:100%;
     min-width:0;
-    height:112px;
+    height:140px;
     border-width:2px;
     border-radius:7px;
   }
   .card .name{
-    font-size:6px;
-    min-height:16px;
-    line-height:.98;
+    font-size:13px;
+    min-height:28px;
+    line-height:.94;
   }
   .card .topband{
-    min-height:18px;
-    padding:2px 18px 2px 18px;
+    min-height:22px;
+    padding:3px 22px;
   }
+  .card .topband-label{font-size:9px;letter-spacing:.06em}
   .card .title-block{padding:6px 6px 0}
   .card .topline{
-    font-size:.42rem;
+    font-size:.6rem;
     letter-spacing:.04em;
   }
   .card .meta,
   .card .footer,
-  .card .secondary-muscles{font-size:.42rem}
-  .card .primary-muscles{font-size:.56rem}
-  .card-icon{font-size:9px}
+  .card .secondary-muscles{font-size:.6rem}
+  .card .primary-muscles{font-size:.72rem}
+  .card-icon{font-size:16px}
 
+  /* workout screen active card readable typography (421-640px range) */
+  #workoutScreen .active-center .card.large .name{font-size:.88rem;min-height:36px;line-height:.92}
+  #workoutScreen .active-center .card.large .card-icon{font-size:18px}
+  #workoutScreen .active-center .card.large .primary-muscles{font-size:11px;line-height:1.1}
+  #workoutScreen .active-center .card.large .secondary-muscles{font-size:9px;line-height:1.12}
   /* workout screen: single-column layout, piles hidden */
   #workoutScreen .workout-grid{
     display:flex;
@@ -1673,7 +1794,7 @@ button{cursor:pointer}
   .active-center{order:1;flex-shrink:0;display:flex;justify-content:center;}
   /* compact controls: flatten auto-panel into flex-wrap row */
   .auto-panel{
-    order:2;
+    order:4;
     flex-shrink:0;
     width:auto;
     display:flex;
@@ -1682,10 +1803,11 @@ button{cursor:pointer}
     align-items:stretch;
     padding:6px;
   }
-  .active-details{order:3;display:flex;flex-direction:column;gap:4px;min-height:0;flex-shrink:0;}
-  .active-funfact{order:4;width:100%;min-height:0;padding:2px 0 0;text-align:left}
+  .active-details{order:5;display:flex;flex-direction:column;gap:4px;min-height:0;flex-shrink:0;}
+  .active-funfact{order:6;width:100%;min-height:0;padding:2px 0 0;text-align:left}
   /* done button: circular with progress ring */
-  .next-btn-wrap{order:5;align-self:center;width:116px;height:116px;margin:4px 0}
+  .next-btn-wrap{order:2;align-self:center;width:116px;height:116px;margin:4px 0}
+  .skip-btn{order:3;align-self:center;}
   .progress-ring{display:block;width:116px;height:116px}
   .done-btn{
     width:100px;
@@ -1703,7 +1825,7 @@ button{cursor:pointer}
   .auto-countdown{display:block;order:0;flex:1 1 100%;font-size:1.1rem;padding:4px 10px 3px;text-align:center}
   .auto-meta{display:none}
   /* row 2: pause + auto toggle, each half-width */
-  .pause-btn{order:1;flex:1 1 calc(50% - 2px);min-width:0;min-height:34px}
+  .pause-btn{order:1;flex:1 1 calc(50% - 2px);min-width:0;min-height:44px}
   .auto-toggle-btn{order:2;flex:1 1 calc(50% - 2px);min-width:0;min-height:30px;font-size:.62rem}
   /* row 2: presets, each quarter-width */
   .auto-minute-btn{order:3;flex:1 1 calc(25% - 3px);min-width:0;min-height:26px;padding:4px 2px;font-size:.6rem}

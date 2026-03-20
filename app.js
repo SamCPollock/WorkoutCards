@@ -94,6 +94,7 @@ const els = {
   pauseBtn: document.getElementById("pauseBtn"),
   finishBtn: document.getElementById("finishBtn"),
   doneBtn: document.getElementById("doneBtn"),
+  skipBtn: document.getElementById("skipBtn"),
   progressRingFill: document.getElementById("progressRingFill"),
   summaryFan: document.getElementById("summaryFan"),
   summaryTime: document.getElementById("summaryTime"),
@@ -107,7 +108,14 @@ const els = {
   infoPopupHowTo: document.getElementById("infoPopupHowTo"),
   infoPopupTip: document.getElementById("infoPopupTip"),
   infoPopupCouplet: document.getElementById("infoPopupCouplet"),
-  infoPopupHide: document.getElementById("infoPopupHide")
+  infoPopupHide: document.getElementById("infoPopupHide"),
+  cardPreviewOverlay: document.getElementById("cardPreviewOverlay"),
+  cardPreviewBackdrop: document.getElementById("cardPreviewBackdrop"),
+  cardPreviewSlot: document.getElementById("cardPreviewSlot"),
+  cardPreviewHowTo: document.getElementById("cardPreviewHowTo"),
+  cardPreviewTip: document.getElementById("cardPreviewTip"),
+  cardPreviewAddBtn: document.getElementById("cardPreviewAddBtn"),
+  cardPreviewCloseBtn: document.getElementById("cardPreviewCloseBtn")
 };
 
 function byId(id){ return EXERCISES.find(x => x.id === id); }
@@ -759,6 +767,29 @@ function bindPseudoButton(el, handler){
     handler(ev);
   });
 }
+function closeCardPreview(){
+  els.cardPreviewOverlay.classList.add("hidden");
+  els.cardPreviewOverlay.setAttribute("aria-hidden", "true");
+  els.cardPreviewSlot.innerHTML = "";
+}
+function openCardPreview(ex){
+  const info = getExerciseInfo(ex);
+  els.cardPreviewSlot.innerHTML = "";
+  els.cardPreviewSlot.appendChild(createCard(ex, {large:true, showInfo:false}));
+  els.cardPreviewHowTo.textContent = info.howTo;
+  els.cardPreviewTip.textContent = info.tip;
+  const alreadyIn = state.deck.includes(ex.id);
+  const full = state.deck.length >= MAX_DECK;
+  els.cardPreviewAddBtn.disabled = alreadyIn || full;
+  els.cardPreviewAddBtn.textContent = alreadyIn ? "Already in hand" : full ? "Hand full" : "Add to hand";
+  els.cardPreviewAddBtn.onclick = () => {
+    addToDeck(ex.id);
+    closeCardPreview();
+  };
+  els.cardPreviewOverlay.classList.remove("hidden");
+  els.cardPreviewOverlay.setAttribute("aria-hidden", "false");
+  els.cardPreviewOverlay.scrollTop = 0;
+}
 function closeInfoPopup(){
   state.infoAnchor = null;
   els.infoPopup.classList.add("hidden");
@@ -856,11 +887,12 @@ function createCard(ex, {large=false, stampText="", footerHint="", removable=fal
   return card;
 }
 function renderFilters(){
+  const narrow = window.innerWidth <= 640;
   els.filterStrip.innerHTML = "";
   CATEGORY_ORDER.forEach(key => {
     const btn = document.createElement("button");
     btn.className = `filter-chip${state.category === key ? " active" : ""}`;
-    btn.textContent = CATEGORY_META[key].label;
+    btn.textContent = narrow ? CATEGORY_META[key].short : CATEGORY_META[key].label;
     btn.addEventListener("click", () => {
       state.category = key;
       pickVisibleBatch();
@@ -914,13 +946,21 @@ function renderLibrary(){
     btn.addEventListener("click", ev => {
       if(shouldSuppressClick()) return;
       if(ev.target.closest(".card-info-toggle,.card-add-toggle")) return;
-      focusLibraryCard(ex.id);
+      if(window.innerWidth <= 640){
+        openCardPreview(ex);
+      } else {
+        focusLibraryCard(ex.id);
+      }
     });
     btn.addEventListener("keydown", ev => {
       if(ev.target.closest(".card-info-toggle,.card-add-toggle")) return;
       if(ev.key !== "Enter" && ev.key !== " ") return;
       ev.preventDefault();
-      focusLibraryCard(ex.id);
+      if(window.innerWidth <= 640){
+        openCardPreview(ex);
+      } else {
+        focusLibraryCard(ex.id);
+      }
     });
     btn.addEventListener("pointerdown", ev => beginBuilderPointerDrag(ev, {type:"library", id:ex.id}, btn));
     wrap.appendChild(btn);
@@ -1093,7 +1133,7 @@ function renderWorkout(){
   const totalSecs = totalElapsed();
   els.exerciseTimer.textContent = formatTime(currentSecs);
   els.totalTimerLine.textContent = `${formatTime(beforeSecs)} + ${formatTime(currentSecs)} = ${formatTime(totalSecs)}`;
-  els.cardPosition.textContent = `Card ${state.currentIndex + 1} / ${state.workoutDeck.length}`;
+  els.cardPosition.textContent = `Card ${state.currentIndex + 1} / ${state.workoutDeck.length} · ${formatTime(totalSecs)}`;
   els.windowFrame.classList.toggle("is-paused-tone", !state.running);
   els.pauseBtn.setAttribute("aria-pressed", state.running ? "true" : "false");
   els.pauseBtn.classList.toggle("is-running", state.running);
@@ -1101,7 +1141,14 @@ function renderWorkout(){
   els.autoToggleBtn.textContent = state.autoEnabled ? "Auto on" : "Auto off";
   els.autoToggleBtn.classList.toggle("is-on", state.autoEnabled);
   const autoRemaining = Math.max(0, currentAutoTargetSecs() - currentSecs);
-  els.autoCountdown.textContent = state.autoEnabled ? formatTime(autoRemaining) : formatTime(state.autoDefaultSecs);
+  const isNarrow = window.innerWidth <= 640;
+  if(state.autoEnabled){
+    els.autoCountdown.textContent = isNarrow
+      ? `${formatTime(autoRemaining)} / ${formatTime(currentAutoTargetSecs())}`
+      : formatTime(autoRemaining);
+  } else {
+    els.autoCountdown.textContent = formatTime(state.autoDefaultSecs);
+  }
   [[els.auto1Btn, 60], [els.auto2Btn, 120], [els.auto3Btn, 180]].forEach(([btn, secs]) => {
     btn.classList.toggle("active", state.autoDefaultSecs === secs);
   });
@@ -1260,6 +1307,11 @@ function renderSummary(){
   els.mostWorkedCard.innerHTML = `<strong>Most worked today:</strong><br>${topWorked.length ? topWorked.join(", ") : "Nothing scored yet."}`;
 }
 function bindEvents(){
+  els.cardPreviewCloseBtn.addEventListener("click", closeCardPreview);
+  els.cardPreviewBackdrop.addEventListener("click", closeCardPreview);
+  els.cardPreviewOverlay.addEventListener("pointerdown", ev => {
+    if(ev.target === els.cardPreviewOverlay) closeCardPreview();
+  });
   bindPseudoButton(els.infoPopupHide, ev => {
     ev.preventDefault();
     ev.stopPropagation();
@@ -1332,11 +1384,18 @@ function bindEvents(){
     renderWorkout();
   });
   els.doneBtn.addEventListener("click", doneCurrent);
-  els.finishBtn.addEventListener("click", showSummary);
+  els.skipBtn.addEventListener("click", moveToNext);
+  els.finishBtn.addEventListener("click", () => {
+    if(!window.confirm("End this session and go to the summary?")) return;
+    showSummary();
+  });
   els.backToBuilderBtn.addEventListener("click", () => {
+    if(!window.confirm("Go back to the hand builder? This will clear your session stats.")) return;
     setScreen("builderScreen");
   });
   els.homeBtn.addEventListener("click", () => {
+    const inSession = els.workoutScreen.classList.contains("active") || els.summaryScreen.classList.contains("active");
+    if(inSession && !window.confirm("Return home? Your current session will be lost.")) return;
     clearAutoAdvancePending();
     state.running = false;
     if(state.interval) clearInterval(state.interval);
@@ -1346,11 +1405,13 @@ function bindEvents(){
   window.addEventListener("resize", () => {
     syncResponsiveWorkoutTimer();
     positionInfoPopup(state.infoAnchor);
+    renderFilters();
     renderDeck();
     renderLibrary();
   });
   window.addEventListener("keydown", ev => {
     if(ev.key === "Escape") closeInfoPopup();
+    if(ev.key === "Escape") closeCardPreview();
     if(ev.key === "Escape" && state.focusedLibraryId !== null){
       state.focusedLibraryId = null;
       renderLibrary();

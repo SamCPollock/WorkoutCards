@@ -164,6 +164,7 @@
                     </svg>
                     <button id="doneBtn" class="classic-btn done-btn">Next</button>
                   </div>
+                  <button id="skipBtn" class="skip-btn" type="button">Skip</button>
                   <div class="active-funfact" id="activeFunFactWrap">
                     <div class="active-funfact-label" id="activeFunFactLabel">Fun fact</div>
                     <div class="active-funfact-copy" id="activeFunFact">A fun fact will show here while a card is active.</div>
@@ -261,6 +262,27 @@
   <div class="card-info-section">
     <div class="card-info-label">Couplet</div>
     <div id="infoPopupCouplet" class="card-info-copy card-info-couplet"></div>
+  </div>
+</div>
+
+<div id="cardPreviewOverlay" class="card-preview-overlay hidden" aria-hidden="true" aria-modal="true" role="dialog">
+  <div class="card-preview-backdrop" id="cardPreviewBackdrop"></div>
+  <div class="card-preview-panel">
+    <div class="card-preview-card" id="cardPreviewSlot"></div>
+    <div class="card-preview-info">
+      <div class="card-preview-section">
+        <div class="card-preview-label">How to do it</div>
+        <div class="card-preview-copy" id="cardPreviewHowTo"></div>
+      </div>
+      <div class="card-preview-section">
+        <div class="card-preview-label">Tip</div>
+        <div class="card-preview-copy" id="cardPreviewTip"></div>
+      </div>
+    </div>
+    <div class="card-preview-btns">
+      <button id="cardPreviewAddBtn" class="classic-btn card-preview-add" type="button">Add to hand</button>
+      <button id="cardPreviewCloseBtn" class="classic-btn card-preview-close" type="button">Close</button>
+    </div>
   </div>
 </div>
 
